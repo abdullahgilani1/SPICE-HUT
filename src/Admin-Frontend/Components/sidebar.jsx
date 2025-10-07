@@ -1,16 +1,27 @@
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FiHome, FiUsers, FiShoppingCart, FiSettings, FiUser, FiLogOut, FiX } from "react-icons/fi";
+import { FiHome, FiUsers, FiShoppingCart, FiSettings, FiUser, FiLogOut, FiX, FiBarChart } from "react-icons/fi";
 
 const links = [
+  { to: "/admin", label: "Dashboard", icon: <FiBarChart /> },
   { to: "/admin/menumanagement", label: "Menu Management", icon: <FiHome /> },
   { to: "/admin/orders", label: "Orders", icon: <FiShoppingCart /> },
   { to: "/admin/customers", label: "Customers", icon: <FiUsers /> },
+  { to: "/admin/admins", label: "Admins", icon: <FiUser /> },
   { to: "/admin/settings", label: "Content Management", icon: <FiSettings /> },
 ];
 
 export default function Sidebar({ collapsed, open, setOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleLogout = () => {
     // Clear any authentication data here (e.g., localStorage)
@@ -24,11 +35,11 @@ export default function Sidebar({ collapsed, open, setOpen }) {
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-transparent bg-opacity-70 z-50"
+        className="fixed inset-0 bg-transparent bg-opacity-70 z-90"
         onClick={() => setOpen(false)}
       />
       <aside
-        className="fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-orange-400 to-orange-600 text-white flex flex-col justify-between z-60 shadow-lg transition-transform duration-300"
+        className="fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-orange-400 to-orange-600 text-white flex flex-col justify-between z-100 shadow-lg transition-transform duration-300"
       >
         <div>
           <div className="flex items-center justify-between p-4 border-b border-blue-800">
@@ -63,7 +74,7 @@ export default function Sidebar({ collapsed, open, setOpen }) {
           </nav>
         </div>
         <div className="p-4 border-t border-blue-800 flex flex-col gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-black transition-colors" onClick={() => {}}>
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-black transition-colors" onClick={() => navigate("/admin/profile")}>
             <FiUser size={20} />
             Profile
           </button>
@@ -79,7 +90,7 @@ export default function Sidebar({ collapsed, open, setOpen }) {
   // Desktop: collapsible sidebar
   const desktopSidebar = (
     <aside
-      className={`hidden md:flex h-full bg-gradient-to-b from-orange-400 to-orange-600 text-white flex-col justify-between z-40 shadow-lg transition-all duration-300 ${
+      className={`flex h-full bg-gradient-to-b from-orange-400 to-orange-600 text-white flex-col justify-between z-40 shadow-lg transition-all duration-300 ${
         collapsed ? "w-16" : "w-64"
       }`}
       style={{ minWidth: collapsed ? "4rem" : "16rem" }}
@@ -110,7 +121,7 @@ export default function Sidebar({ collapsed, open, setOpen }) {
         </nav>
       </div>
       <div className="p-4 border-t border-white flex flex-col gap-3 items-center">
-        <button className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-black transition-colors justify-center" onClick={() => {}}>
+        <button className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-black transition-colors justify-center" onClick={() => navigate("/admin/profile")}>
           <FiUser size={20} />
           {!collapsed && <span>Profile</span>}
         </button>
@@ -124,10 +135,8 @@ export default function Sidebar({ collapsed, open, setOpen }) {
 
   return (
     <>
-      {/* Mobile sidebar */}
-      {open && mobileSidebar}
-      {/* Desktop sidebar */}
-      {desktopSidebar}
+      {isDesktop && desktopSidebar}
+      {!isDesktop && open && mobileSidebar}
     </>
   );
 }

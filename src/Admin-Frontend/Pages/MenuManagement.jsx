@@ -23,7 +23,7 @@ export default function MenuManagement() {
   });
 
   return (
-    <main className="p-4 md:p-8 lg:p-12 font-sans min-h-screen bg-gray-50 relative overflow-hidden md:overflow-visible">
+    <main className="p-4 md:p-8 lg:p-12 font-sans min-h-screen bg-gray-50">
       {/* Header Section */}
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Menu Management</h1>

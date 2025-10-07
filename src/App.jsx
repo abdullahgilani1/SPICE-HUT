@@ -8,12 +8,15 @@ import AdminLayout from './Admin-Frontend/Components/AdminLayout';
 import MenuManagement from './Admin-Frontend/Pages/MenuManagement';
 import Orders from './Admin-Frontend/Pages/Orders';
 import Customers from './Admin-Frontend/Pages/Customers';
+import Admins from './Admin-Frontend/Pages/Admins';
+import AdminProfile from './Admin-Frontend/Pages/Profile';
+import Dashboard from './Admin-Frontend/Pages/Dashboard';
 import Reports from './Admin-Frontend/Pages/Reports';
 import Settings from './Admin-Frontend/Pages/Settings';
 
-//user-view import 
-/*import Header from "./User-Frontend/components/header";
-import Footer from "./User-Frontend/components/header";
+//user-view import
+/*
+import UserLayout from "./User-Frontend/UserLayout";
 import Home from "./User-Frontend/pages/home";
 import Menu from "./User-Frontend/pages/menu";
 import Cart from "./User-Frontend/pages/cart";
@@ -31,25 +34,27 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/adminregister" element={<AdminRegister />} />
         <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
           <Route path="menumanagement" element={<MenuManagement />} />
           <Route path="orders" element={<Orders />} />
           <Route path="customers" element={<Customers />} />
+          <Route path="admins" element={<Admins />} />
+          <Route path="profile" element={<AdminProfile />} />
           <Route path="reports" element={<Reports />} />
           <Route path="settings" element={<Settings />} />
-
-          
         </Route>
+        {/*
+      <Route path="/user" element={<UserLayout />}>
+          <Route path="intro" element={<Intro />} />
+          <Route path="home" element={<Home />} />
+          <Route path="menu" element={<Menu />} />
+          <Route path="cart" element={<Cart />} />
+          <Route path="billing" element={<Billing />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="support" element={<Support />} />
+        </Route> */}
       </Routes>
     </Router>
   );
 }
-/*
-<Route path="/" element={<Home />} />
-<Route path="/menu" element={<Menu />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/billing" element={<Billing />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/intro" element={<Intro />} />          
-*/
 export default App;

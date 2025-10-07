@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiSearch, FiEdit, FiTrash2, FiUserPlus, FiEye, FiShoppingCart } from "react-icons/fi";
+import { FiSearch, FiTrash2, FiUserPlus, FiEye, FiShoppingCart } from "react-icons/fi";
 
 const customersData = [
   {
@@ -78,11 +78,12 @@ export default function Customers() {
     const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          customer.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "All" || customer.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const isNotAdmin = customer.role !== "Admin";
+    return matchesSearch && matchesStatus && isNotAdmin;
   });
 
   return (
-    <main className="p-4 md:p-8 lg:p-12 font-sans min-h-screen bg-gray-50 relative overflow-hidden">
+    <main className="p-4 md:p-8 lg:p-12 font-sans min-h-screen bg-gray-50">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
         <div>
@@ -176,12 +177,6 @@ export default function Customers() {
                         title="View Order History"
                       >
                         <FiShoppingCart className="w-4 h-4" />
-                      </button>
-                      <button className="text-blue-600 hover:text-blue-900 p-1">
-                        <FiEdit className="w-4 h-4" />
-                      </button>
-                      <button className="text-red-600 hover:text-red-900 p-1">
-                        <FiTrash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>

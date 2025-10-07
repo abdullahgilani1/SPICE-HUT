@@ -1,10 +1,16 @@
+import videoSrc from '../../assets/intro.mp4';
+
 export default function Intro() {
   return (
     <div className="bg-black min-h-screen">
-      <img
-        src="Spice Hut intro.jpg"   // put your image inside /public/images/
-        alt="Intro"
+      <video
+        src={videoSrc}
+        alt="Intro Video"
         className="w-full h-screen object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
       />
     </div>
   );

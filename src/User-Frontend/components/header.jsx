@@ -1,42 +1,51 @@
-import { Link } from "react-router-dom";
-import { FaUser, FaShoppingCart } from "react-icons/fa";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { FiSearch, FiUser, FiShoppingCart } from 'react-icons/fi';
 
-export default function Header() {
+const Header = () => {
+  const [showSearch, setShowSearch] = useState(false);
+  const navigate = useNavigate();
+
   return (
-    <header className="bg-black text-white shadow-md">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 sm:px-6 lg:px-8 py-3 md:py-6">
-        
-        {/* LEFT: Logo */}
-        <div className="flex-1">
-          <div className="text-xl font-bold tracking-wide">Spice Hut</div>
-        </div>
-
-        {/* CENTER: Navigation */}
-        <nav className="flex-1 hidden md:flex justify-center space-x-6 lg:space-x-8 text-base lg:text-lg font-medium">
-          <Link to="/user/intro" className="hover:text-orange-500 transition">Intro</Link>
-          <Link to="/user/home" className="hover:text-orange-500 transition">Home</Link>
-          <Link to="/user/menu" className="hover:text-orange-500 transition">Menu</Link>
-          <Link to="/user/support" className="hover:text-orange-500 transition">Support</Link>
-        </nav>
-
-        {/* RIGHT: Profile + Cart */}
-        <div className="flex-1 flex justify-end items-center space-x-4 sm:space-x-6">
-          <Link to="/user/profile" className="hover:text-orange-500 transition">
-            <FaUser className="w-5 h-5 sm:w-6 sm:h-6" />
-          </Link>
-          <Link to="/user/cart" className="hover:text-orange-500 transition">
-            <FaShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
-          </Link>
-        </div>
+    <header className="bg-black shadow-md py-6 px-8 flex flex-col md:flex-row items-center justify-between">
+      {/* Left: Restaurant Name */}
+      <div className="text-2xl font-bold text-white mb-4 md:mb-0">
+        Spice Hut
       </div>
 
-      {/* Mobile Menu */}
-      <div className="md:hidden bg-black px-4 py-2 flex flex-wrap justify-center gap-4 text-sm sm:text-base font-medium">
-        <Link to="/user/intro" className="hover:text-orange-500 transition">Intro</Link>
-        <Link to="/user/home" className="hover:text-orange-500 transition">Home</Link>
-        <Link to="/user/menu" className="hover:text-orange-500 transition">Menu</Link>
-        <Link to="/user/support" className="hover:text-orange-500 transition">Support</Link>
+      {/* Center: Navigation Links */}
+      <nav className="flex space-x-10 mb-4 md:mb-0">
+        <Link to="/user/intro" className="text-white hover:text-[#FF6A00] transition">Intro</Link>
+        <Link to="/user/home" className="text-white hover:text-[#FF6A00] transition">Home</Link>
+        <Link to="/user/menu" className="text-white hover:text-[#FF6A00] transition">Menu</Link>
+        <Link to="/user/support" className="text-white hover:text-[#FF6A00] transition">Support</Link>
+      </nav>
+
+      {/* Right: Icons */}
+      <div className="flex items-center space-x-4">
+        <button onClick={() => setShowSearch(!showSearch)} className="text-white hover:text-[#FF6A00]">
+          <FiSearch size={24} />
+        </button>
+        <button onClick={() => navigate('/user/profile')} className="text-white hover:text-[#FF6A00]">
+          <FiUser size={24} />
+        </button>
+        <button onClick={() => navigate('/user/cart')} className="text-white hover:text-[#FF6A00]">
+          <FiShoppingCart size={24} />
+        </button>
       </div>
+
+      {/* Search Bar */}
+      {showSearch && (
+        <div className="mt-4 md:mt-0 md:ml-4 w-full md:w-auto">
+          <input
+            type="text"
+            placeholder="Search..."
+            className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+        </div>
+      )}
     </header>
   );
-}
+};
+
+export default Header;

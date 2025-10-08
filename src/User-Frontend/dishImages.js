@@ -1,0 +1,122 @@
+// Dish image mapping: dish name (lowercase, no spaces/punctuation) => image filename
+export const dishImages = {
+  // Appetizers
+  'papadums': 'PAPA DUMS.jpg',
+  'veggiepokora': 'Vegetable Pakora.jpg',
+  'paneerpokora': 'Paneer Pakora.jpg',
+  'chickenpakora': 'Chicken Pakora..jpg',
+  'fishpakora': 'Fish Pakora.jpg',
+  'prawnpakora': 'Tandoori Prawns .jpg',
+  'vegetablesamosa': 'Samosa .jpg',
+  'chickensamosa': 'Samosa .jpg',
+  'beefsamosa': 'Samosa .jpg',
+  // Butter Dishes
+  'butterchicken': 'butter chicken.jpg',
+  'butterbeef': 'butter chicken.jpg',
+  'butterlamb': 'butter chicken.jpg',
+  'butterprawns': 'Tandoori Prawns .jpg',
+  // Korma Dishes
+  'chickenkorma': 'korma.jpg',
+  'beefkorma': 'korma.jpg',
+  'lambkorma': 'korma.jpg',
+  'prawnkorma': 'Tandoori Prawns .jpg',
+  // Curry Dishes
+  'chickencurry': 'Curry..jpg',
+  'beefcurry': 'Curry..jpg',
+  'lambcurry': 'Curry..jpg',
+  'prawncurry': 'Tandoori Prawns .jpg',
+  'fishcurry': 'Cocnut Curry.jpg',
+  // Masala Dishes
+  'chickenmasala': 'Chana Masala.jpg',
+  'beefmasala': 'Chana Masala.jpg',
+  'lambmasala': 'Chana Masala.jpg',
+  'prawnmasala': 'Tandoori Prawns .jpg',
+  // Coconut Curry Dishes
+  'coconutchickencurry': 'Cocnut Curry.jpg',
+  'coconutbeefcurry': 'Cocnut Curry.jpg',
+  'coconutlambcurry': 'Cocnut Curry.jpg',
+  'coconutprawncurry': 'Tandoori Prawns .jpg',
+  // Tandoori Dishes
+  'tandoorichickentikka(boneless)': 'Tandoori Chicken Tikka .jpg',
+  'tandoorimalaitikka(boneless)': 'Tandoori Malayi Tikka .jpg',
+  'tandoorimintchickentikka(boneless)': 'Tandoori Chicken Tikka .jpg',
+  'tandoorichicken(bone-in)': 'Tandoori Chicken Tikka .jpg',
+  'tandooribeefkebab': 'Chapli Kabab.jpg',
+  'tandoorifishtikka': 'Clay Oven (Tandoor).jpg',
+  'tandooriprawntikka': 'Tandoori Prawns .jpg',
+  'tandoorimixedplatter': 'Tandoori Chicken Tikka .jpg',
+  // Biryani Dishes
+  'saffronbasmatirice': 'Basmati Rice..jpg',
+  'vegetablebiryani': 'Biryani.jpg',
+  'chickenbiryani': 'Biryani.jpg',
+  'beefbiryani': 'Biryani.jpg',
+  'lambbiryani': 'Biryani.jpg',
+  'prawnbiryani': 'Biryani.jpg',
+  // Karahi Dishes
+  'chickenkarahi': 'Clay Oven (Tandoor).jpg',
+  'beefkarahi': 'Clay Oven (Tandoor).jpg',
+  'lambkarahi': 'Clay Oven (Tandoor).jpg',
+  'prawnkarahi': 'Tandoori Prawns .jpg',
+  // Vindaloo Dishes
+  'chickenvindaloo': 'Curry..jpg',
+  'beefvindaloo': 'Curry..jpg',
+  'lambvindaloo': 'Curry..jpg',
+  'prawnvindaloo': 'Tandoori Prawns .jpg',
+  // Jalfrezi Dishes
+  'chickenjalfrezi': 'Jalfrezi.jpg',
+  'beefjalfrezi': 'Jalfrezi.jpg',
+  'lambjalfrezi': 'Jalfrezi.jpg',
+  'prawnjalfrezi': 'Tandoori Prawns .jpg',
+  // Palak Dishes
+  'palakchicken': 'Palak Paneer.jpg',
+  'palakbeef': 'Palak Paneer.jpg',
+  'palaklamb': 'Palak Paneer.jpg',
+  'palakprawn': 'Tandoori Prawns .jpg',
+  // Mango Curry Dishes
+  'mangochickencurry': 'Curry..jpg',
+  'mangobeefcurry': 'Curry..jpg',
+  'mangolambcurry': 'Curry..jpg',
+  'mangofishcurry': 'Cocnut Curry.jpg',
+  'mangoprawncurry': 'Tandoori Prawns .jpg',
+  // Vegetable Dishes
+  'daalmakhni': 'Daal Makhni..jpg',
+  'veggiekorma': 'korma.jpg',
+  'chanamasala': 'Chana Masala.jpg',
+  'daal': 'Daal Makhni..jpg',
+  'aalogobi': 'Aalo Gobi (Cauliflower).jpg',
+  'vegetablejalfrezi': 'Jalfrezi.jpg',
+  'shaipaneer': 'Paneer Pakora.jpg',
+  'palakpaneer': 'Palak Paneer.jpg',
+  'muttarpaneer': 'Paneer Pakora.jpg',
+  'karahipaneer': 'Paneer Pakora.jpg',
+  'bhindimasala': 'Bhindi. .jpg',
+  'eggplantbharta': 'Malai Kofta Curry. .jpg',
+  'butterveggie': 'butter chicken.jpg',
+  'buttersauce': 'butter chicken.jpg',
+  // Indian Naan Bread
+  'traditionalnaan': 'Garlic Naan..jpg',
+  'roti': 'Roti.jpg',
+  'garlicnaan': 'Garlic Naan..jpg',
+  'veggiestuffednaan': 'Chicken Or Beef Stuffed Naan..jpg',
+  'coconutnaan': 'Cocnut Curry.jpg',
+  'chickenkeemanaan': 'Qeema Naan.jpg',
+  'beefkeemanaan': 'Qeema Naan.jpg',
+  // Salads & Sides
+  'mangochutney': 'SALAD.jpg',
+  'acharmixed(pickles)': 'SALAD.jpg',
+  'raita': 'SALAD.jpg',
+  'spicehutsalad': 'SALAD.jpg',
+  // Combo Specials
+  'butterchickencombo': 'butter chicken.jpg',
+  'biryanicombo': 'Biryani.jpg',
+  'beefcombo': 'Chapli Kabab.jpg',
+  'lambcombo': 'Malai Kofta Curry. .jpg',
+  'prawncombo': 'Tandoori Prawns .jpg',
+  // Desserts
+  'gulabjaman': 'Gulab Jamun..jpg',
+  'kheer': 'Kulfi.jpg',
+  'kulfi': 'Kulfi.jpg',
+  'rasmalai': 'Ras Malayi.jpg',
+};
+
+export const placeholderImage = 'home.jpg';

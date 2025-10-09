@@ -42,21 +42,43 @@ const orders = [
     time: "18:15",
     payment: "Card"
   },
+  {
+    id: "#ORD-005",
+    customer: "Mike Wilson",
+    items: ["Butter Chicken", "Garlic Naan"],
+    total: 24.90,
+    status: "Pending",
+    date: "2024-01-15",
+    time: "15:20",
+    payment: "Card"
+  },
+  {
+    id: "#ORD-006",
+    customer: "Sarah Davis",
+    items: ["Chicken Biryani", "Raita"],
+    total: 26.90,
+    status: "Processing",
+    date: "2024-01-15",
+    time: "16:10",
+    payment: "Cash"
+  },
 ];
-
-const statusOptions = ["All", "Pending", "Processing", "Delivered", "Completed"];
 
 export default function Orders() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("All");
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+  // Filter orders by search term
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          order.customer.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus === "All" || order.status === selectedStatus;
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
+
+  // Group orders by status
+  const pendingOrders = filteredOrders.filter(order => order.status === "Pending");
+  const processingOrders = filteredOrders.filter(order => order.status === "Processing");
+  const deliveredOrders = filteredOrders.filter(order => order.status === "Delivered");
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -82,7 +104,7 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Search and Filter */}
+      {/* Search Bar */}
       <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
@@ -95,81 +117,226 @@ export default function Orders() {
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
           </div>
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-          >
-            {statusOptions.map(status => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
         </div>
       </div>
 
-      {/* Orders Table */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Time</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.customer}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    <div className="max-w-xs truncate" title={order.items.join(", ")}>
-                      {order.items.join(", ")}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.total}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <select
-                      value={order.status}
-                      onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                      className={`px-2 py-1 text-xs font-medium rounded-full border-0 ${getStatusColor(order.status)}`}
-                    >
-                      <option value="Pending">Pending</option>
-                      <option value="Processing">Processing</option>
-                      <option value="Delivered">Delivered</option>
-                    </select>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div>{order.date}</div>
-                    <div className="text-xs">{order.time}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => setSelectedOrder(order)}
-                      className="text-blue-600 hover:text-blue-900 mr-3"
-                    >
-                      <FiEye className="w-4 h-4" />
-                    </button>
-                  </td>
+      {/* Orders Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-2xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-yellow-100 text-sm font-medium">Pending Orders</p>
+              <p className="text-3xl font-bold">{pendingOrders.length}</p>
+            </div>
+            <FiClock className="w-8 h-8 text-yellow-200" />
+          </div>
+        </div>
+        <div className="bg-gradient-to-r from-blue-400 to-blue-500 rounded-2xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-100 text-sm font-medium">Processing Orders</p>
+              <p className="text-3xl font-bold">{processingOrders.length}</p>
+            </div>
+            <FiCheck className="w-8 h-8 text-blue-200" />
+          </div>
+        </div>
+        <div className="bg-gradient-to-r from-green-400 to-green-500 rounded-2xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-100 text-sm font-medium">Delivered Orders</p>
+              <p className="text-3xl font-bold">{deliveredOrders.length}</p>
+            </div>
+            <FiCheck className="w-8 h-8 text-green-200" />
+          </div>
+        </div>
+      </div>
+
+      {/* Pending Orders Section */}
+      <div className="mb-8">
+        <div className="flex items-center mb-4">
+          <div className="w-4 h-4 bg-yellow-500 rounded-full mr-3"></div>
+          <h2 className="text-2xl font-bold text-gray-900">Pending Orders ({pendingOrders.length})</h2>
+        </div>
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-yellow-50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Time</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {pendingOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.customer}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      <div className="max-w-xs truncate" title={order.items.join(", ")}>
+                        {order.items.join(", ")}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.total}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div>{order.date}</div>
+                      <div className="text-xs">{order.time}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => updateOrderStatus(order.id, "Processing")}
+                          className="text-blue-600 hover:text-blue-900 px-2 py-1 text-xs bg-blue-100 rounded hover:bg-blue-200 transition-colors"
+                        >
+                          Start Processing
+                        </button>
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="text-gray-600 hover:text-gray-900"
+                        >
+                          <FiEye className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {pendingOrders.length === 0 && (
+            <div className="text-center py-12">
+              <FiClock className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No pending orders</h3>
+              <p className="mt-1 text-sm text-gray-500">All orders are being processed or delivered.</p>
+            </div>
+          )}
         </div>
       </div>
 
-      {filteredOrders.length === 0 && (
-        <div className="text-center py-12">
-          <FiSearch className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No orders found</h3>
-          <p className="mt-1 text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
+      {/* Processing Orders Section */}
+      <div className="mb-8">
+        <div className="flex items-center mb-4">
+          <div className="w-4 h-4 bg-blue-500 rounded-full mr-3"></div>
+          <h2 className="text-2xl font-bold text-gray-900">Processing Orders ({processingOrders.length})</h2>
         </div>
-      )}
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-blue-50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Time</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {processingOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.customer}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      <div className="max-w-xs truncate" title={order.items.join(", ")}>
+                        {order.items.join(", ")}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.total}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div>{order.date}</div>
+                      <div className="text-xs">{order.time}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => updateOrderStatus(order.id, "Delivered")}
+                          className="text-green-600 hover:text-green-900 px-2 py-1 text-xs bg-green-100 rounded hover:bg-green-200 transition-colors"
+                        >
+                          Mark Delivered
+                        </button>
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="text-gray-600 hover:text-gray-900"
+                        >
+                          <FiEye className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {processingOrders.length === 0 && (
+            <div className="text-center py-12">
+              <FiCheck className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No processing orders</h3>
+              <p className="mt-1 text-sm text-gray-500">No orders are currently being processed.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Delivered Orders Section */}
+      <div className="mb-8">
+        <div className="flex items-center mb-4">
+          <div className="w-4 h-4 bg-green-500 rounded-full mr-3"></div>
+          <h2 className="text-2xl font-bold text-gray-900">Delivered Orders ({deliveredOrders.length})</h2>
+        </div>
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-green-50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Time</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {deliveredOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.customer}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      <div className="max-w-xs truncate" title={order.items.join(", ")}>
+                        {order.items.join(", ")}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.total}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div>{order.date}</div>
+                      <div className="text-xs">{order.time}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => setSelectedOrder(order)}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        <FiEye className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {deliveredOrders.length === 0 && (
+            <div className="text-center py-12">
+              <FiCheck className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No delivered orders</h3>
+              <p className="mt-1 text-sm text-gray-500">No orders have been delivered yet.</p>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Order Details Modal */}
       {selectedOrder && (
@@ -197,16 +364,33 @@ export default function Orders() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Order Status</h3>
-                <select
-                  value={selectedOrder.status}
-                  onChange={(e) => updateOrderStatus(selectedOrder.id, e.target.value)}
-                  className={`px-3 py-2 text-sm font-medium rounded-lg border-0 ${getStatusColor(selectedOrder.status)}`}
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="Processing">Processing</option>
-                  <option value="Delivered">Delivered</option>
-                  <option value="Completed">Completed</option>
-                </select>
+                <div className="flex items-center space-x-3">
+                  <span className={`px-3 py-2 text-sm font-medium rounded-lg ${getStatusColor(selectedOrder.status)}`}>
+                    {selectedOrder.status}
+                  </span>
+                  {selectedOrder.status === "Pending" && (
+                    <button
+                      onClick={() => {
+                        updateOrderStatus(selectedOrder.id, "Processing");
+                        setSelectedOrder(null);
+                      }}
+                      className="text-blue-600 hover:text-blue-900 px-3 py-2 text-sm bg-blue-100 rounded hover:bg-blue-200 transition-colors"
+                    >
+                      Start Processing
+                    </button>
+                  )}
+                  {selectedOrder.status === "Processing" && (
+                    <button
+                      onClick={() => {
+                        updateOrderStatus(selectedOrder.id, "Delivered");
+                        setSelectedOrder(null);
+                      }}
+                      className="text-green-600 hover:text-green-900 px-3 py-2 text-sm bg-green-100 rounded hover:bg-green-200 transition-colors"
+                    >
+                      Mark Delivered
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 

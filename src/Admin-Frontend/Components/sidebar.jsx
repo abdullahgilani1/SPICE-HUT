@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FiHome, FiUsers, FiShoppingCart, FiSettings, FiUser, FiLogOut, FiX, FiBarChart } from "react-icons/fi";
+import { useAuth } from "../../contexts/AuthContext";
+import LogoutButton from "../../components/LogoutButton";
 
 const links = [
   { to: "/admin", label: "Dashboard", icon: <FiBarChart /> },
@@ -14,6 +16,7 @@ const links = [
 export default function Sidebar({ collapsed, open, setOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
@@ -22,13 +25,6 @@ export default function Sidebar({ collapsed, open, setOpen }) {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  const handleLogout = () => {
-    // Clear any authentication data here (e.g., localStorage)
-    localStorage.clear();
-    // Redirect to login page
-    navigate("/login");
-  };
 
   // Mobile: overlay sidebar
   const mobileSidebar = (
@@ -121,14 +117,20 @@ export default function Sidebar({ collapsed, open, setOpen }) {
         </nav>
       </div>
       <div className="p-4 border-t border-white flex flex-col gap-3 items-center">
+        {!collapsed && (
+          <div className="w-full text-center mb-2">
+            <p className="text-sm font-medium">{user?.firstName} {user?.lastName}</p>
+            <p className="text-xs opacity-75">{user?.adminProfile?.adminRole}</p>
+          </div>
+        )}
         <button className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-black transition-colors justify-center" onClick={() => navigate("/admin/profile")}>
           <FiUser size={20} />
           {!collapsed && <span>Profile</span>}
         </button>
-        <button className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-red-600 transition-colors justify-center" onClick={handleLogout}>
+        <LogoutButton className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-red-600 transition-colors justify-center text-white hover:text-white">
           <FiLogOut size={20} />
           {!collapsed && <span>Logout</span>}
-        </button>
+        </LogoutButton>
       </div>
     </aside>
   );

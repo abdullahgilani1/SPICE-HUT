@@ -1,24 +1,36 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { FiMail, FiLock, FiUser } from "react-icons/fi";
+import { FiMail, FiLock, FiUser, FiAlertCircle } from "react-icons/fi";
+import { useAuth } from "../contexts/AuthContext";
 import login from "../assets/login.jpg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login: authLogin, error, clearError } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Add real authentication
-    if (email === "admin@test.com" && password === "123456") {
-      navigate("/admin");
-    }
-    else if (email === "user@test.com" && password === "987654") {
-      navigate("/user/intro");
-    }
-    else {
-      alert("Invalid credentials");
+    setIsLoading(true);
+    clearError();
+
+    try {
+      const result = await authLogin(email, password);
+      
+      if (result.success) {
+        // Redirect based on user role
+        if (result.user.role === 'admin') {
+          navigate("/admin");
+        } else {
+          navigate("/user/intro");
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -39,6 +51,14 @@ export default function Login() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+                <FiAlertCircle className="h-5 w-5 text-red-500" />
+                <span className="text-red-700 text-sm">{error}</span>
+              </div>
+            )}
+
             <div className="space-y-6">
               {/* Email Field */}
               <div>
@@ -85,9 +105,17 @@ export default function Login() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-4 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-200 transform hover:scale-105"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-4 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
-                Sign In
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Signing In...
+                  </div>
+                ) : (
+                  'Sign In'
+                )}
               </button>
             </div>
 

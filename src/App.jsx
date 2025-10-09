@@ -15,7 +15,6 @@ import Reports from './Admin-Frontend/Pages/Reports';
 import Settings from './Admin-Frontend/Pages/Settings';
 
 //user-view import
-
 import UserLayout from './User-Frontend/UserLayout.jsx';
 import Intro from './User-Frontend/pages/intro.jsx';
 import Home from './User-Frontend/pages/Home.jsx';
@@ -26,39 +25,56 @@ import Profile from './User-Frontend/pages/Profile.jsx';
 import Cart from './User-Frontend/pages/Cart.jsx';
 import { CartProvider } from './User-Frontend/context.cart.jsx';
 
+// Authentication
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+
 function App() {
   return (
-    <CartProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/adminregister" element={<AdminRegister />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="menumanagement" element={<MenuManagement />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="admins" element={<Admins />} />
-            <Route path="profile" element={<AdminProfile />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/adminregister" element={<AdminRegister />} />
+            
+            {/* Admin Routes - Protected */}
+            <Route path="/admin" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Dashboard />} />
+              <Route path="menumanagement" element={<MenuManagement />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="customers" element={<Customers />} />
+              <Route path="admins" element={<Admins />} />
+              <Route path="profile" element={<AdminProfile />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
 
-          <Route path="/user" element={<UserLayout />}>
-            <Route index element={<Intro />} />
-            <Route path="intro" element={<Intro />} />
-            <Route path="home" element={<Home />} />
-            <Route path="menu" element={<Menu />} />
-            <Route path="menu/:category" element={<CategoryPage />} />
-            <Route path="support" element={<Support />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="cart" element={<Cart />} />
-          </Route>
-        </Routes>
-      </Router>
-    </CartProvider>
+            {/* User Routes - Protected */}
+            <Route path="/user" element={
+              <ProtectedRoute requireUser={true}>
+                <UserLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Intro />} />
+              <Route path="intro" element={<Intro />} />
+              <Route path="home" element={<Home />} />
+              <Route path="menu" element={<Menu />} />
+              <Route path="menu/:category" element={<CategoryPage />} />
+              <Route path="support" element={<Support />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="cart" element={<Cart />} />
+            </Route>
+          </Routes>
+        </Router>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 export default App;

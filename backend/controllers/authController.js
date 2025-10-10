@@ -1,5 +1,5 @@
-const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
 // Generate JWT token
@@ -14,83 +14,15 @@ const generateToken = (userId, role) => {
 // User Signup
 exports.userSignup = async (req, res) => {
   try {
-    const { username, email, password, firstName, lastName, phone } = req.body;
-
-    // Validation
-    if (!username || !email || !password || !firstName || !lastName) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide all required fields'
-      });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password must be at least 6 characters long'
-      });
-    }
-
-    // Check if user already exists
-    const existingUser = await User.findOne({
-      $or: [{ email }, { username }]
-    });
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'User with this email or username already exists'
-      });
-    }
-
-    // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Create user
-    const user = new User({
-      username,
-      email,
-      password: hashedPassword,
-      role: 'user',
-      firstName,
-      lastName,
-      phone
-    });
-
+    const { username, email, password } = req.body;
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(400).json({ error: 'Email already exists' });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ username, email, password: hashedPassword, role: 'user' });
     await user.save();
-
-    // Generate token
-    const token = generateToken(user._id, user.role);
-
-    // Return user data (without password)
-    const userData = {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phone: user.phone,
-      role: user.role,
-      isActive: user.isActive
-    };
-
-    res.status(201).json({
-      success: true,
-      message: 'User registered successfully',
-      data: {
-        user: userData,
-        token
-      }
-    });
-
-  } catch (error) {
-    console.error('User signup error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error during registration',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 };
 

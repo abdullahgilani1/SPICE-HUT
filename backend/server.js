@@ -1,29 +1,26 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
 const cors = require('cors');
-require('dotenv').config();
+
+// Load environment variables
+dotenv.config();
+
+// Connect to database
+connectDB();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log('MongoDB connected');
-}).catch((err) => {
-  console.error('MongoDB connection error:', err);
-});
+// Middlewares
+app.use(cors()); // Enable Cross-Origin Resource Sharing
+app.use(express.json()); // To accept JSON data in the body
 
-const authRoutes = require('./routes/auth');
+// API Routes
 app.use('/api/auth', authRoutes);
 
-app.get('/', (req, res) => {
-  res.send('Spice Hut backend is running!');
-});
-
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

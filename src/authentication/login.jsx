@@ -1,34 +1,54 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { FiMail, FiLock, FiUser, FiAlertCircle } from "react-icons/fi";
-import { useAuth } from "../contexts/AuthContext";
-import login from "../assets/login.jpg";
+import loginImg from "../assets/login.jpg";
+// import { useAuth } from "../contexts/AuthContext"; // We will integrate this later
+import { jwtDecode } from 'jwt-decode';
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { login: authLogin, error, clearError } = useAuth();
+  // const { login: authLogin } = useAuth(); // We will integrate this later
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    clearError();
+    setError('');
 
     try {
-      const result = await authLogin(email, password);
-      
-      if (result.success) {
-        // Redirect based on user role
-        if (result.user.role === 'admin') {
-          navigate("/admin");
-        } else {
-          navigate("/user/intro");
-        }
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to login');
       }
-    } catch (error) {
-      console.error('Login error:', error);
+
+      // For now, we'll just log the token.
+      // The next step is to save this token in our AuthContext.
+      console.log('Login successful, token:', data.token);
+
+      // Decode the token to get user details, including the role
+      const decodedToken = jwtDecode(data.token);
+
+      // authLogin(data.token); // This will be implemented with AuthContext
+      // Navigate based on the user's role
+      if (decodedToken.role === 'admin') {
+        navigate('/admin'); // Redirect admins to the admin panel
+      } else {
+        navigate('/'); // Redirect regular users to the homepage
+      }
+    } catch (err) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -36,8 +56,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen relative">
-      <img src={login} alt="Background" className="absolute inset-0 w-full h-full object-fill filter brightness-30" />
-      <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-transparent to-black/30"></div>
+      <img src={loginImg} alt="Background" className="absolute inset-0 w-full h-full object-fill filter brightness-50" />
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
         <div className="max-w-md w-full space-y-8">
           {/* Header */}
@@ -130,12 +149,6 @@ export default function Login() {
             </div>
           </form>
 
-          {/* Footer */}
-          <div className="text-center">
-            <p className="text-sm text-white mt-6">
-              © 2025 Restaurant Management System. All rights reserved.
-            </p>
-          </div>
         </div>
       </div>
     </div>

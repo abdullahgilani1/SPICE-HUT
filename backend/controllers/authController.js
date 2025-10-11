@@ -1,61 +1,89 @@
-const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
-// Generate JWT token
-const generateToken = (userId, role) => {
-  return jwt.sign(
-    { userId, role },
-    process.env.JWT_SECRET,
-    { expiresIn: '7d' }
-  );
+// Helper function to generate JWT
+const generateToken = (id, role) => {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
+    expiresIn: '30d',
+  });
 };
 
-// User Signup
-exports.userSignup = async (req, res) => {
+/**
+ * @desc    Register a new user or admin
+ * @route   POST /api/auth/register
+ * @access  Public
+ */
+const registerUser = async (req, res) => {
+  const { name, email, password, phone, role } = req.body;
+
   try {
-    const { username, email, password } = req.body;
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ error: 'Email already exists' });
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashedPassword, role: 'user' });
-    await user.save();
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+    // Check if user already exists
+    const userExists = await User.findOne({ email });
+
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Create new user
+    const user = await User.create({
+      name,
+      email,
+      password,
+      phone,
+      role: role || 'user', // Default to 'user' if role is not provided
+    });
+
+    if (user) {
+      // We will add OTP logic here later. For now, we'll just register.
+      res.status(201).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id, user.role),
+      });
+    } else {
+      res.status(400).json({ message: 'Invalid user data' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
-// Admin Signup
-exports.adminSignup = async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ error: 'Email already exists' });
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashedPassword, role: 'admin' });
-    await user.save();
-    res.status(201).json({ message: 'Admin registered successfully' });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+/**
+ * @desc    Authenticate user & get token
+ * @route   POST /api/auth/login
+ * @access  Public
+ */
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
 
-// Login (for both roles)
-exports.login = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
-    const user = await User.findOne({ email, role });
-    if (!user) return res.status(401).json({ error: 'Invalid credentials or role' });
+    // Check if user exists
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Check if password matches
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
-    res.json({ token, user: { username: user.username, email: user.email, role: user.role } });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // User is authenticated, return token
+    res.status(200).json({
+      token: generateToken(user._id, user.role),
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
 };

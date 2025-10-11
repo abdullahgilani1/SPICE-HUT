@@ -3,7 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FiMail, FiLock, FiUser, FiAlertCircle } from "react-icons/fi";
 import loginImg from "../assets/login.jpg";
 import { useAuth } from "../contexts/AuthContext";
+
 import { jwtDecode } from 'jwt-decode';
+import { authAPI } from '../services/api';
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -19,42 +21,19 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      // Handle cases where the response is not OK (e.g., 400, 401, 500)
-      if (!response.ok) {
-        // Try to get a specific error message from the server's JSON response
-        const errorData = await response.json().catch(() => null); // Gracefully handle non-JSON error responses
-        throw new Error(errorData?.message || `Request failed with status ${response.status}`);
-      }
-
-      // Handle 204 No Content - this shouldn't happen on a successful login, but it's good to guard against
-      if (response.status === 204) {
-        throw new Error('Login server returned no content. Please check server configuration.');
-      }
-
-      const data = await response.json();
-
-      // Use the login function from AuthContext to store the token
-      authLogin(data.token);
-
-      // Decode the token to get user details, including the role
-      const decodedToken = jwtDecode(data.token);
-
-      // Navigate based on the user's role
-      if (decodedToken.role === 'admin') {
-        navigate('/admin/dashboard'); // Redirect admins to the admin panel
+      // Use only the AuthContext login function
+      const result = await authLogin(email, password);
+      if (result.success && result.user) {
+        if (result.user.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/user/intro');
+        }
       } else {
-        navigate('/user/intro'); // Redirect regular users to the intro page
+        setError(result.error || 'Login failed');
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }

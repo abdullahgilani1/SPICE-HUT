@@ -6,7 +6,9 @@ export default function Navbar({ setSidebarCollapsed, sidebarCollapsed, setSideb
 
   const getPageTitle = () => {
     switch (location.pathname) {
-      case "/admin/dashboard":
+      case "/admin":
+        return "Dashboard";
+      case "/admin/menumanagement":
         return "Menu Management";
       case "/admin/customers":
         return "Customers";

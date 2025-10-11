@@ -103,18 +103,25 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      
       const response = await authAPI.login(email, password);
-      
-      if (response.success) {
-        const { user: loggedInUser, token: newToken } = response.data;
-        setUser(loggedInUser);
-        setToken(newToken);
-        localStorage.setItem('token', newToken);
-        return { success: true, user: loggedInUser };
+      // response is { token: ... }
+      if (response && response.token) {
+        setToken(response.token);
+        localStorage.setItem('token', response.token);
+        // Optionally decode user info from token
+        let userInfo = null;
+        try {
+          const base64Url = response.token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          userInfo = JSON.parse(window.atob(base64));
+        } catch (e) {
+          userInfo = null;
+        }
+        setUser(userInfo);
+        return { success: true, user: userInfo };
       } else {
-        setError(response.message);
-        return { success: false, error: response.message };
+        setError('Login failed: No token received');
+        return { success: false, error: 'Login failed: No token received' };
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed';
@@ -127,18 +134,10 @@ export const AuthProvider = ({ children }) => {
 
   // Logout
   const logout = async () => {
-    try {
-      if (token) {
-        await authAPI.logout();
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      setUser(null);
-      setToken(null);
-      localStorage.removeItem('token');
-      setError(null);
-    }
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('token');
+    setError(null);
   };
 
   // Get user profile

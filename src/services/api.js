@@ -40,14 +40,15 @@ api.interceptors.response.use(
 
 // Authentication API
 export const authAPI = {
+
   // User signup
   userSignup: async (userData) => {
-    return api.post('/auth/signup/user', userData);
+    return api.post('/auth/register', userData);
   },
 
   // Admin signup
   adminSignup: async (adminData) => {
-    return api.post('/auth/signup/admin', adminData);
+    return api.post('/auth/register', adminData);
   },
 
   // Login

@@ -70,14 +70,11 @@ export default function Sidebar({ collapsed, open, setOpen }) {
           </nav>
         </div>
         <div className="p-4 border-t border-blue-800 flex flex-col gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-black transition-colors" onClick={() => navigate("/admin/profile")}>
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-black transition-colors" onClick={() => navigate("/admin/profile")}> 
             <FiUser size={20} />
             Profile
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-600 transition-colors" onClick={handleLogout}>
-            <FiLogOut size={20} />
-            Logout
-          </button>
+          <LogoutButton className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-white hover:text-white" />
         </div>
       </aside>
     </>

@@ -1,5 +1,7 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { authAPI } from '../services/api';
 
 export default function AdminRegister() {
   const navigate = useNavigate();
@@ -29,31 +31,17 @@ export default function AdminRegister() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          password: formData.password,
-          role: 'admin', // Hardcode role for admin registration
-        }),
+      // Use shared authAPI for admin registration
+      await authAPI.adminSignup({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        role: 'admin',
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to register');
-      }
-
-      console.log('Admin registration successful:', data);
-      navigate('/login'); // Redirect to login page after successful registration
-
+      navigate('/login');
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || 'Failed to register');
     } finally {
       setLoading(false);
     }

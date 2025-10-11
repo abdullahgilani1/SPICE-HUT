@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiMail, FiLock, FiUser, FiAlertCircle } from "react-icons/fi";
 import loginImg from "../assets/login.jpg";
-// import { useAuth } from "../contexts/AuthContext"; // We will integrate this later
+import { useAuth } from "../contexts/AuthContext";
 import { jwtDecode } from 'jwt-decode';
 
 export default function Login() {
@@ -11,7 +11,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  // const { login: authLogin } = useAuth(); // We will integrate this later
+  const { login: authLogin } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,25 +27,31 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-
+      // Handle cases where the response is not OK (e.g., 400, 401, 500)
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to login');
+        // Try to get a specific error message from the server's JSON response
+        const errorData = await response.json().catch(() => null); // Gracefully handle non-JSON error responses
+        throw new Error(errorData?.message || `Request failed with status ${response.status}`);
       }
 
-      // For now, we'll just log the token.
-      // The next step is to save this token in our AuthContext.
-      console.log('Login successful, token:', data.token);
+      // Handle 204 No Content - this shouldn't happen on a successful login, but it's good to guard against
+      if (response.status === 204) {
+        throw new Error('Login server returned no content. Please check server configuration.');
+      }
+
+      const data = await response.json();
+
+      // Use the login function from AuthContext to store the token
+      authLogin(data.token);
 
       // Decode the token to get user details, including the role
       const decodedToken = jwtDecode(data.token);
 
-      // authLogin(data.token); // This will be implemented with AuthContext
       // Navigate based on the user's role
       if (decodedToken.role === 'admin') {
-        navigate('/admin'); // Redirect admins to the admin panel
+        navigate('/admin/dashboard'); // Redirect admins to the admin panel
       } else {
-        navigate('/'); // Redirect regular users to the homepage
+        navigate('/user/intro'); // Redirect regular users to the intro page
       }
     } catch (err) {
       setError(err.message);

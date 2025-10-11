@@ -58,24 +58,26 @@ const registerUser = async (req, res) => {
  */
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
-  console.log('Login attempt:', { email, password });
+  // Minimal logging: avoid printing passwords, full user objects, emails or IDs
+  console.log('Auth: login attempt');
 
   try {
     // Check if user exists
     const user = await User.findOne({ email });
-    console.log('User found:', user);
+    console.log(`Auth: user lookup ${user ? 'found' : 'not found'}`);
 
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Check if password matches
+    // Check if password matches (do not log the boolean in production if you prefer silence)
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password match:', isMatch);
-
     if (!isMatch) {
+      console.log('Auth: failed login attempt');
       return res.status(400).json({ message: 'Invalid credentials' });
     }
+
+    console.log('Auth: successful login');
 
     // User is authenticated, return token
     res.status(200).json({

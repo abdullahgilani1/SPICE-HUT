@@ -4,6 +4,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const customerRoutes = require('./routes/customerRoutes');
+const profileRoutes = require('./routes/profileRoutes');
 const cors = require('cors');
 
 // Load environment variables
@@ -23,6 +24,7 @@ app.use(express.json()); // To accept JSON data in the body
 app.use('/api/auth', authRoutes);
 app.use('/api/admins', adminRoutes);
 app.use('/api/customers', customerRoutes);
+app.use('/api/profile', profileRoutes);
 
 const PORT = process.env.PORT || 5000;
 

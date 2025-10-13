@@ -1,3 +1,15 @@
+// Profile API (backend integration)
+export const profileAPI = {
+  // Get current user's profile
+  getProfile: async () => {
+    return api.get('/profile');
+  },
+
+  // Update current user's profile
+  updateProfile: async (profileData) => {
+    return api.put('/profile', profileData);
+  },
+};
 import axios from 'axios';
 
 // Create axios instance with base configuration

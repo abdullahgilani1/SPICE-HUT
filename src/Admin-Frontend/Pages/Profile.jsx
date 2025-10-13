@@ -1,33 +1,63 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { FiSave, FiUser, FiMail, FiLock, FiEdit3, FiCamera } from "react-icons/fi";
+import { profileAPI } from "../../services/api";
 
 export default function AdminProfile() {
   const [formData, setFormData] = useState({
-    name: "Admin User",
-    email: "admin@example.com",
+    name: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
-
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Fetch profile on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await profileAPI.getProfile();
+        setFormData((prev) => ({ ...prev, name: data.name, email: data.email }));
+      } catch (err) {
+        setError("Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password && formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-    // Here you would typically send the data to an API
-    alert("Profile updated successfully!");
-    setIsEditing(false);
+    setLoading(true);
+    setError("");
+    try {
+      await profileAPI.updateProfile({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password || undefined,
+      });
+      alert("Profile updated successfully!");
+      setIsEditing(false);
+      setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }));
+    } catch (err) {
+      setError("Failed to update profile");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

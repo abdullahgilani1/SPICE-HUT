@@ -65,6 +65,16 @@ export const authAPI = {
   getProfile: async () => {
     return api.get('/auth/profile');
   },
+
+  // Verify user for password reset
+  verifyUser: async (verificationData) => {
+    return api.post('/auth/verify-user', verificationData);
+  },
+
+  // Reset password
+  resetPassword: async (resetData) => {
+    return api.post('/auth/reset-password', resetData);
+  },
 };
 
 // Menu API (for future use)

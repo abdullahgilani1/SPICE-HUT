@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './authentication/login';
 import Register from './authentication/register';
+import ForgotPassword from './authentication/ForgotPassword';
 
 //admin-view import
 import AdminRegister from './authentication/adminregister';
@@ -38,6 +39,7 @@ function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/adminregister" element={<AdminRegister />} />
             
             {/* Admin Routes - Protected */}

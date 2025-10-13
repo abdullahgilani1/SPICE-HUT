@@ -88,7 +88,61 @@ const loginUser = async (req, res) => {
   }
 };
 
+
+/**
+ * @desc    Verify user for password reset
+ * @route   POST /api/auth/verify-user
+ * @access  Public
+ */
+const verifyUser = async (req, res) => {
+  const { email, phone } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.phone !== phone) {
+      return res.status(400).json({ message: 'Phone number does not match' });
+    }
+
+    res.status(200).json({ message: 'User verified successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+/**
+ * @desc    Reset user password
+ * @route   POST /api/auth/reset-password
+ * @access  Public
+ */
+const resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.password = newPassword; // plain text
+    await user.save();
+
+    res.json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Reset password error:", error); // 👈 ADD THIS LINE
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+
 module.exports = {
   registerUser,
   loginUser,
+  verifyUser,
+  resetPassword,
 };

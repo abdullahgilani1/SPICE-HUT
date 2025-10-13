@@ -118,59 +118,41 @@ export const orderAPI = {
   },
 };
 
-// Customer API (for future use)
+
+// Customer API (backend integration)
 export const customerAPI = {
-  // Update profile
-  updateProfile: async (profileData) => {
-    return api.patch('/customers/profile', profileData);
+  // Get all customers
+  getCustomers: async () => {
+    return api.get('/customers');
   },
 
-  // Add address
-  addAddress: async (addressData) => {
-    return api.post('/customers/addresses', addressData);
-  },
-
-  // Update address
-  updateAddress: async (addressId, addressData) => {
-    return api.patch(`/customers/addresses/${addressId}`, addressData);
-  },
-
-  // Delete address
-  deleteAddress: async (addressId) => {
-    return api.delete(`/customers/addresses/${addressId}`);
+  // Delete a customer
+  deleteCustomer: async (id) => {
+    return api.delete(`/customers/${id}`);
   },
 };
 
-// Admin API (for future use)
+
+// Admin API (backend integration)
 export const adminAPI = {
-  // Get all customers
-  getCustomers: async () => {
-    return api.get('/admin/customers');
+  // Get all admins
+  getAdmins: async () => {
+    return api.get('/admins');
   },
 
-  // Get all orders
-  getOrders: async () => {
-    return api.get('/admin/orders');
+  // Add a new admin
+  addAdmin: async (adminData) => {
+    return api.post('/admins', adminData);
   },
 
-  // Get dashboard stats
-  getDashboardStats: async () => {
-    return api.get('/admin/dashboard/stats');
+  // Update an admin
+  updateAdmin: async (id, adminData) => {
+    return api.put(`/admins/${id}`, adminData);
   },
 
-  // Update menu item
-  updateMenuItem: async (id, menuData) => {
-    return api.patch(`/admin/menu/${id}`, menuData);
-  },
-
-  // Create menu item
-  createMenuItem: async (menuData) => {
-    return api.post('/admin/menu', menuData);
-  },
-
-  // Delete menu item
-  deleteMenuItem: async (id) => {
-    return api.delete(`/admin/menu/${id}`);
+  // Delete an admin
+  deleteAdmin: async (id) => {
+    return api.delete(`/admins/${id}`);
   },
 };
 

@@ -1,86 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiSearch, FiEdit, FiTrash2, FiUserPlus, FiEye, FiShoppingCart } from "react-icons/fi";
-
-const customersData = [
-  {
-    id: 1,
-    name: "Abdullah",
-    email: "abdullah@example.com",
-    phone: "+1 (555) 123-4567",
-    role: "Admin",
-    status: "Active",
-    joinDate: "2023-01-15",
-    totalOrders: 15,
-    totalSpent: 245.50,
-    lastOrder: "2024-01-15",
-    addresses: ["123 Main St, City, State 12345"],
-    orderHistory: [
-      { id: "#ORD-001", date: "2024-01-15", items: ["Margherita Pizza", "Chicken Burger"], total: 22.98, status: "Completed" },
-      { id: "#ORD-002", date: "2024-01-10", items: ["Caesar Salad"], total: 8.99, status: "Completed" },
-    ]
-  },
-  {
-    id: 2,
-    name: "Sabeeh",
-    email: "sabeeh@example.com",
-    phone: "+1 (555) 234-5678",
-    role: "User",
-    status: "Active",
-    joinDate: "2023-02-20",
-    totalOrders: 8,
-    totalSpent: 156.75,
-    lastOrder: "2024-01-12",
-    addresses: ["456 Oak Ave, City, State 12346"],
-    orderHistory: [
-      { id: "#ORD-003", date: "2024-01-12", items: ["Pasta Carbonara", "Chocolate Cake"], total: 20.98, status: "Completed" },
-    ]
-  },
-  {
-    id: 3,
-    name: "Ahmed",
-    email: "ahmed@example.com",
-    phone: "+1 (555) 345-6789",
-    role: "User",
-    status: "Active",
-    joinDate: "2023-03-10",
-    totalOrders: 12,
-    totalSpent: 198.30,
-    lastOrder: "2024-01-14",
-    addresses: ["789 Pine St, City, State 12347"],
-    orderHistory: [
-      { id: "#ORD-004", date: "2024-01-14", items: ["Margherita Pizza"], total: 12.99, status: "Delivered" },
-    ]
-  },
-  {
-    id: 4,
-    name: "Fatima",
-    email: "fatima@example.com",
-    phone: "+1 (555) 456-7890",
-    role: "User",
-    status: "Active",
-    joinDate: "2023-04-05",
-    totalOrders: 6,
-    totalSpent: 89.94,
-    lastOrder: "2024-01-08",
-    addresses: ["321 Elm St, City, State 12348"],
-    orderHistory: [
-      { id: "#ORD-005", date: "2024-01-08", items: ["Caesar Salad", "Chicken Burger"], total: 21.98, status: "Completed" },
-    ]
-  },
-];
+import { adminAPI } from "../../services/api";
 
 export default function Admins() {
+  const [admins, setAdmins] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const filteredCustomers = customersData.filter(customer => {
-    const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         customer.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "All" || customer.status === filterStatus;
-    const isAdmin = customer.role === "Admin";
-    return matchesSearch && matchesStatus && isAdmin;
+  // Fetch admins from backend
+  useEffect(() => {
+    const fetchAdmins = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await adminAPI.getAdmins();
+        setAdmins(data);
+      } catch (err) {
+        setError("Failed to load admins");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAdmins();
+  }, []);
+
+  // Filter admins by search and status
+  const filteredAdmins = admins.filter((admin) => {
+    const matchesSearch = admin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      admin.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === "All" || (admin.status || "Active") === filterStatus;
+    return matchesSearch && matchesStatus;
   });
+
+  // Handler for deleting an admin
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this admin?")) return;
+    try {
+      await adminAPI.deleteAdmin(id);
+      setAdmins((prev) => prev.filter((a) => a._id !== id));
+    } catch (err) {
+      alert("Failed to delete admin");
+    }
+  };
+
+  // Handler for selecting admin (for modal/details)
+  const handleSelectAdmin = (admin) => setSelectedAdmin(admin);
 
   return (
     <main className="p-4 md:p-8 lg:p-12 font-sans min-h-screen bg-gray-50">
@@ -125,190 +92,168 @@ export default function Admins() {
       {/* Admins Table */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Admins List ({filteredCustomers.length})</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Admins List ({filteredAdmins.length})</h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Join Date</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredCustomers.map((customer) => (
-                <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
-                        {customer.name.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                        <div className="text-sm text-gray-500">{customer.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      customer.role === 'Admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {customer.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      customer.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {customer.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(customer.joinDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => setSelectedCustomer(customer)}
-                        className="text-green-600 hover:text-green-900 p-1"
-                        title="View Order History"
-                      >
-                        <FiShoppingCart className="w-4 h-4" />
-                      </button>
-                      <button className="text-blue-600 hover:text-blue-900 p-1">
-                        <FiEdit className="w-4 h-4" />
-                      </button>
-                      <button className="text-red-600 hover:text-red-900 p-1">
-                        <FiTrash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {filteredCustomers.length === 0 && (
-          <div className="text-center py-12">
-            <FiSearch className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No admins found</h3>
-            <p className="mt-1 text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
-          </div>
+        {loading ? (
+          <div className="text-center py-12">Loading...</div>
+        ) : error ? (
+          <div className="text-center py-12 text-red-500">{error}</div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Join Date</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredAdmins.map((admin) => (
+                    <tr key={admin._id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                            {admin.name?.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{admin.name}</div>
+                            <div className="text-sm text-gray-500">{admin.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800`}>
+                          {admin.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          (admin.status || "Active") === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {admin.status || "Active"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {admin.createdAt ? new Date(admin.createdAt).toLocaleDateString() : "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleSelectAdmin(admin)}
+                            className="text-green-600 hover:text-green-900 p-1"
+                            title="View Details"
+                          >
+                            <FiShoppingCart className="w-4 h-4" />
+                          </button>
+                          <button className="text-blue-600 hover:text-blue-900 p-1">
+                            <FiEdit className="w-4 h-4" />
+                          </button>
+                          <button
+                            className="text-red-600 hover:text-red-900 p-1"
+                            onClick={() => handleDelete(admin._id)}
+                          >
+                            <FiTrash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {filteredAdmins.length === 0 && (
+              <div className="text-center py-12">
+                <FiSearch className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No admins found</h3>
+                <p className="mt-1 text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
       {/* Admin Details Modal */}
-      {selectedCustomer && (
+      {selectedAdmin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Admin Details</h2>
               <button
-                onClick={() => setSelectedCustomer(null)}
+                onClick={() => setSelectedAdmin(null)}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <FiTrash2 className="w-6 h-6" />
               </button>
             </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
               {/* Admin Info */}
               <div className="lg:col-span-1">
                 <div className="bg-gray-50 rounded-xl p-6">
                   <div className="flex items-center mb-4">
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl mr-4">
-                      {selectedCustomer.name.charAt(0)}
+                      {selectedAdmin.name?.charAt(0)}
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{selectedCustomer.name}</h3>
-                      <p className="text-sm text-gray-600">{selectedCustomer.email}</p>
+                      <h3 className="text-lg font-semibold text-gray-900">{selectedAdmin.name}</h3>
+                      <p className="text-sm text-gray-600">{selectedAdmin.email}</p>
                     </div>
                   </div>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Phone:</span>
-                      <span className="font-medium">{selectedCustomer.phone}</span>
+                      <span className="font-medium">{selectedAdmin.phone}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Role:</span>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        selectedCustomer.role === 'Admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {selectedCustomer.role}
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800`}>
+                        {selectedAdmin.role}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Status:</span>
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        selectedCustomer.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        (selectedAdmin.status || "Active") === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {selectedCustomer.status}
+                        {selectedAdmin.status || "Active"}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Joined:</span>
-                      <span className="font-medium">{new Date(selectedCustomer.joinDate).toLocaleDateString()}</span>
+                      <span className="font-medium">{selectedAdmin.createdAt ? new Date(selectedAdmin.createdAt).toLocaleDateString() : "-"}</span>
                     </div>
                   </div>
                 </div>
               </div>
-
-              {/* Order Statistics */}
+              {/* Order Statistics (placeholder) */}
               <div className="lg:col-span-2">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <div className="bg-blue-50 rounded-xl p-4 text-center">
-                    <div className="text-2xl font-bold text-blue-600">{selectedCustomer.totalOrders}</div>
+                    <div className="text-2xl font-bold text-blue-600">-</div>
                     <div className="text-sm text-blue-800">Total Orders</div>
                   </div>
                   <div className="bg-green-50 rounded-xl p-4 text-center">
-                    <div className="text-2xl font-bold text-green-600">${selectedCustomer.totalSpent}</div>
+                    <div className="text-2xl font-bold text-green-600">-</div>
                     <div className="text-sm text-green-800">Total Spent</div>
                   </div>
                   <div className="bg-orange-50 rounded-xl p-4 text-center">
-                    <div className="text-2xl font-bold text-orange-600">{new Date(selectedCustomer.lastOrder).toLocaleDateString()}</div>
+                    <div className="text-2xl font-bold text-orange-600">-</div>
                     <div className="text-sm text-orange-800">Last Order</div>
                   </div>
                 </div>
-
-                {/* Order History */}
+                {/* Order History (placeholder) */}
                 <div className="bg-white border border-gray-200 rounded-xl p-6">
                   <h4 className="text-lg font-semibold text-gray-900 mb-4">Order History</h4>
-                  <div className="space-y-4">
-                    {selectedCustomer.orderHistory.map((order, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
-                            {order.id.slice(-1)}
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{order.id}</p>
-                            <p className="text-sm text-gray-500">{order.items.join(", ")}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-gray-900">${order.total}</p>
-                          <p className="text-sm text-gray-500">{order.date}</p>
-                          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-                            order.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                            order.status === 'Delivered' ? 'bg-orange-100 text-orange-800' :
-                            'bg-blue-100 text-blue-800'
-                          }`}>
-                            {order.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <div className="space-y-4 text-gray-400">No order history available for admins.</div>
                 </div>
               </div>
             </div>
-
             <div className="flex gap-3">
               <button
-                onClick={() => setSelectedCustomer(null)}
+                onClick={() => setSelectedAdmin(null)}
                 className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 Close

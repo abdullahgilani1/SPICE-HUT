@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from 'react-router-dom';
 import { FaTrashAlt, FaGift, FaStar, FaRegStar } from "react-icons/fa";
@@ -37,7 +36,6 @@ export default function Cart() {
     navigate('menu');
   };
 
-  // Loyalty points: 5 points for every $10 spent
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
@@ -45,18 +43,16 @@ export default function Cart() {
   const tax = subtotal * 0.1;
   const deliveryFee = 5.99;
   const total = subtotal + tax + deliveryFee;
-  const pointsToEarn = Math.floor(subtotal / 10) * 5;
+  const pointsToEarn = Math.floor(subtotal);
 
-  // Optionally, update points after purchase (simulate checkout)
+  // Navigate to checkout page
   const proceedToCheckout = () => {
-    setLoyaltyPoints((prev) => prev + pointsToEarn);
-    alert('Checkout successful! Loyalty points updated.');
-    emptyCart();
+    navigate('/user/checkout');
   };
 
   return (
     <div className="min-h-screen bg-[#FF6A00] flex flex-col">
-      <main className="flex-1 px-8 py-12 text-white">
+      <main className="flex flex-1 px-8 py-12 text-white">
         <h1 className="text-3xl font-bold mb-1">Your Cart</h1>
         <p className="text-sm mb-8">Review your order and proceed to checkout</p>
 
@@ -132,9 +128,9 @@ export default function Cart() {
                 <h3 className="font-semibold">Loyalty Points</h3>
               </div>
               <p className="text-sm mb-2">Current Points <span className="font-bold text-yellow-400 flex items-center gap-1"><FaStar /> {loyaltyPoints}</span></p>
-              <p className="text-sm mb-2">Points to Earn <span className="font-bold text-green-400 flex items-center gap-1"><FaRegStar /> +{pointsToEarn}</span></p>
+              <p className="text-sm mb-2">You will earn {pointsToEarn} points on this order. (Total: {loyaltyPoints + pointsToEarn})</p>
               <div className="bg-[#2a1f0f] p-2 rounded text-xs mt-4 text-center">
-                <p className="font-bold">Earn 5 points for every $10 spent!</p>
+                <p className="font-bold">Earn 1 point for every $1 spent!</p>
                 <p>100 points = $1 discount on future orders</p>
               </div>
             </DarkCard>

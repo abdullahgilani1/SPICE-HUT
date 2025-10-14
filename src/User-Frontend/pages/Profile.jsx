@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaUser, FaEnvelope, FaPhone, FaClock, FaGift, FaHome, FaBriefcase, FaTrash, FaStar, FaMapMarkerAlt } from "react-icons/fa";
+import { useCart } from '../context.cart.jsx';
 
 const initialProfile = {
   firstName: "John",
@@ -28,11 +29,19 @@ const Profile = () => {
   const [showOrderHistory, setShowOrderHistory] = useState(false);
   const [orderHistory] = useState(initialOrderHistory);
 
+<<<<<<< HEAD
   const loyaltyPoints = 150;
   const nextRewardPoints = 100;
   const _totalOrders = orderHistory.length;
   const _totalSpent = orderHistory.reduce((acc, order) => acc + order.total, 0).toFixed(2);
   const _favoriteItem = "Butter Chicken";
+=======
+  const { loyaltyPoints, totalEarned, usedPoints } = useCart();
+  const nextRewardPoints = 100 - loyaltyPoints;
+  const totalOrders = orderHistory.length;
+  const totalSpent = orderHistory.reduce((acc, order) => acc + order.total, 0).toFixed(2);
+  const favoriteItem = "Butter Chicken";
+>>>>>>> ce018be66d4a02aa77dfc330635a799267204c47
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -254,14 +263,15 @@ const Profile = () => {
                 <span className="text-xs">Points</span>
               </div>
               <div className="bg-[#4a3a2a] rounded p-2 mb-2 text-xs">
-                <p className="font-semibold">Next Reward</p>
-                <p>100 points until $5 off your next order</p>
-                <div className="bg-gray-600 rounded h-2 mt-1">
-                  <div
-                    className="bg-red-900 h-2 rounded"
-                    style={{ width: `${(loyaltyPoints / (loyaltyPoints + nextRewardPoints)) * 100}%` }}
-                  ></div>
-                </div>
+                <p className="font-semibold">Points Summary</p>
+                <p>Total Earned: {totalEarned}</p>
+                <p>Used: {usedPoints}</p>
+                <p>Available: {loyaltyPoints}</p>
+                {loyaltyPoints < 100 ? (
+                  <p>You have {loyaltyPoints} loyalty points. Earn {100 - loyaltyPoints} more for a $1 discount!</p>
+                ) : (
+                  <p>You have {loyaltyPoints} loyalty points! Ready for a $1 discount.</p>
+                )}
               </div>
               <ul className="text-xs text-left mb-2">
                 <li>• Earn 1 point per $1 spent</li>

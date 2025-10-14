@@ -191,7 +191,7 @@ const CategoryPage = () => {
       <main className="flex-1 py-12 px-4">
         <h1 className="text-4xl font-bold text-center text-white mb-8">{decodedCategory}</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
-          {dishes.map((dish, idx) => (
+          {dishes.map((dish) => (
             <div
               key={dish.name}
               className="bg-black bg-opacity-70 rounded-2xl p-8 w-full max-w-[480px] min-h-[520px] mx-auto flex flex-col items-center justify-between cursor-pointer transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg"

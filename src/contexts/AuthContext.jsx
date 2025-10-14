@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
 import { authAPI } from '../services/api';
 
 const AuthContext = createContext();
@@ -32,8 +33,8 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('token');
             setToken(null);
           }
-        } catch (error) {
-          console.error('Auth check failed:', error);
+        } catch {
+          console.error('Auth check failed');
           localStorage.removeItem('token');
           setToken(null);
         }
@@ -114,7 +115,7 @@ export const AuthProvider = ({ children }) => {
           const base64Url = response.token.split('.')[1];
           const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
           userInfo = JSON.parse(window.atob(base64));
-        } catch (e) {
+        } catch {
           userInfo = null;
         }
         setUser(userInfo);

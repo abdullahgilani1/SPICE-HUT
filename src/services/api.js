@@ -105,6 +105,30 @@ export const menuAPI = {
   getMenuItem: async (id) => {
     return api.get(`/menu/${id}`);
   },
+  // Admin: create menu item
+  createMenuItem: async (itemData) => {
+    return api.post('/menu', itemData);
+  },
+
+  // Admin: update menu item
+  updateMenuItem: async (id, itemData) => {
+    return api.put(`/menu/${id}`, itemData);
+  },
+
+  // Admin: delete menu item
+  deleteMenuItem: async (id) => {
+    return api.delete(`/menu/${id}`);
+  },
+  // Admin: create menu item with file upload
+  createMenuItemMultipart: async (formData) => {
+    // don't let axios response interceptor assume JSON
+    return api.post('/menu', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+
+  // Admin: update menu item with file upload
+  updateMenuItemMultipart: async (id, formData) => {
+    return api.put(`/menu/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
 };
 
 // Order API (for future use)
@@ -116,6 +140,11 @@ export const orderAPI = {
 
   // Get user orders
   getUserOrders: async () => {
+    return api.get('/orders');
+  },
+
+  // Admin: get all orders
+  getOrders: async () => {
     return api.get('/orders');
   },
 

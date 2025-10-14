@@ -1,18 +1,19 @@
 
 import React, { useState, useEffect } from "react";
-import { FiSave, FiUser, FiMail, FiLock, FiEdit3, FiCamera } from "react-icons/fi";
+import { FiSave, FiUser, FiMail, FiLock, FiEdit3, FiCamera, FiPhone } from "react-icons/fi";
 import { profileAPI } from "../../services/api";
 
 export default function AdminProfile() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [_loading, setLoading] = useState(false);
+  const [_error, setError] = useState("");
 
   // Fetch profile on mount
   useEffect(() => {
@@ -20,9 +21,9 @@ export default function AdminProfile() {
       setLoading(true);
       setError("");
       try {
-        const data = await profileAPI.getProfile();
-        setFormData((prev) => ({ ...prev, name: data.name, email: data.email }));
-      } catch (err) {
+  const data = await profileAPI.getProfile();
+  setFormData((prev) => ({ ...prev, name: data.name, email: data.email, phone: data.phone || '' }));
+      } catch {
         setError("Failed to load profile");
       } finally {
         setLoading(false);
@@ -44,16 +45,17 @@ export default function AdminProfile() {
     }
     setLoading(true);
     setError("");
-    try {
+      try {
       await profileAPI.updateProfile({
         name: formData.name,
         email: formData.email,
+        phone: formData.phone || undefined,
         password: formData.password || undefined,
       });
       alert("Profile updated successfully!");
       setIsEditing(false);
       setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }));
-    } catch (err) {
+    } catch {
       setError("Failed to update profile");
     } finally {
       setLoading(false);
@@ -117,7 +119,7 @@ export default function AdminProfile() {
 
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <label htmlFor="name" className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                         <FiUser className="mr-2 text-gray-500" />
                         Full Name
                       </label>
@@ -138,7 +140,7 @@ export default function AdminProfile() {
                     </div>
 
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <label htmlFor="email" className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                         <FiMail className="mr-2 text-gray-500" />
                         Email Address
                       </label>
@@ -157,6 +159,26 @@ export default function AdminProfile() {
                         required
                       />
                     </div>
+
+                    <div>
+                      <label htmlFor="phone" className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                        <FiPhone className="mr-2 text-gray-500" />
+                        Phone Number
+                      </label>
+                      <input
+                        type="text"
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        className={`w-full px-4 py-3 border rounded-xl transition-all duration-200 ${
+                          isEditing
+                            ? 'border-blue-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white'
+                            : 'border-gray-200 bg-gray-50 text-gray-600'
+                        }`}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -168,7 +190,7 @@ export default function AdminProfile() {
 
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <label htmlFor="password" className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                         <FiLock className="mr-2 text-gray-500" />
                         New Password
                       </label>
@@ -192,7 +214,7 @@ export default function AdminProfile() {
                     </div>
 
                     <div>
-                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                      <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                         <FiLock className="mr-2 text-gray-500" />
                         Confirm Password
                       </label>

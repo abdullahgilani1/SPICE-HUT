@@ -30,9 +30,9 @@ const Profile = () => {
 
   const loyaltyPoints = 150;
   const nextRewardPoints = 100;
-  const totalOrders = orderHistory.length;
-  const totalSpent = orderHistory.reduce((acc, order) => acc + order.total, 0).toFixed(2);
-  const favoriteItem = "Butter Chicken";
+  const _totalOrders = orderHistory.length;
+  const _totalSpent = orderHistory.reduce((acc, order) => acc + order.total, 0).toFixed(2);
+  const _favoriteItem = "Butter Chicken";
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -59,7 +59,7 @@ const Profile = () => {
     setAddresses((prev) => [...prev, newAddress]);
   };
 
-  const handleAddressChange = (id, field, value) => {
+  const _handleAddressChange = (id, field, value) => {
     setAddresses((prev) =>
       prev.map((addr) =>
         addr.id === id ? { ...addr, [field]: value } : addr

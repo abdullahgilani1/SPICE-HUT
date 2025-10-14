@@ -1,26 +1,180 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiFilter } from "react-icons/fi";
+import { menuAPI } from "../../services/api";
 
-const menuItems = [
-  { id: 1, name: "Margherita Pizza", category: "Pizza", price: 12.99, status: "Available", image: "/api/placeholder/100/100" },
-  { id: 2, name: "Chicken Burger", category: "Burgers", price: 9.99, status: "Available", image: "/api/placeholder/100/100" },
-  { id: 3, name: "Caesar Salad", category: "Salads", price: 8.99, status: "Available", image: "/api/placeholder/100/100" },
-  { id: 4, name: "Pasta Carbonara", category: "Pasta", price: 13.99, status: "Out of Stock", image: "/api/placeholder/100/100" },
-  { id: 5, name: "Chocolate Cake", category: "Desserts", price: 6.99, status: "Available", image: "/api/placeholder/100/100" },
+const categories = [
+  'All',
+  'appetizers',
+  'butter dishes',
+  'korma dishes',
+  'curry dishes',
+  'masala dishes',
+  'coconut curry dishes',
+  'tandoori dishes',
+  'biryani dishes',
+  'karahi dishes',
+  'vindaloo dishes',
+  'jalfrezi dishes',
+  'palak dishes',
+  'mango curry dishes',
+  'vegetable dishes',
+  'indian naan bread',
+  'salads & sides',
+  'indian deserts',
+  'spice hut special combo'
 ];
-
-const categories = ["All", "Pizza", "Burgers", "Salads", "Pasta", "Desserts"];
 
 export default function MenuManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [preview, setPreview] = useState('');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editItem, setEditItem] = useState(null);
 
-  const filteredItems = menuItems.filter(item => {
+  // derive backend origin from API URL (strip trailing /api)
+  const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
+
+  const fetchItems = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await menuAPI.getMenuItems();
+      setItems(data || []);
+    } catch {
+      setError('Failed to load menu items');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { fetchItems(); }, []);
+
+  const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  // Add menu item handler (very small client-side form)
+  const handleAddItem = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    // read form values
+    const name = form.name.value.trim();
+    const category = form.category.value;
+    const price = parseFloat(form.price.value) || 0;
+    const description = form.description?.value || '';
+    const subCategory = form.subCategory?.value || '';
+
+    // If a file input exists, read it as data URL and save to localStorage
+    const fileInput = form.imageFile;
+    let imageValue = form.image?.value || '';
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      const file = fileInput.files[0];
+      imageValue = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Save to browser localStorage under a sanitized key
+      const sanitize = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const key = `menu-image-${sanitize(name)}`;
+      try { localStorage.setItem(key, imageValue); } catch (err) { console.warn('localStorage save failed', err); }
+    }
+
+    try {
+      const file = fileInput && fileInput.files && fileInput.files[0];
+      if (file) {
+        const fd = new FormData();
+        fd.append('name', name);
+        fd.append('category', category);
+        fd.append('price', price);
+        fd.append('description', description);
+        fd.append('subCategory', subCategory);
+        fd.append('imageFile', file);
+        await menuAPI.createMenuItemMultipart(fd);
+      } else {
+        const newItem = { name, category, price, status: 'Available', image: imageValue, description, subCategory };
+        await menuAPI.createMenuItem(newItem);
+      }
+      setShowAddModal(false);
+      setPreview('');
+      fetchItems();
+    } catch (err) {
+      console.error('Failed to add item', err);
+      const msg = err?.response?.data?.message || err?.message || 'Failed to add item';
+      alert(msg);
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!confirm('Delete this menu item?')) return;
+    try {
+      await menuAPI.deleteMenuItem(id);
+      fetchItems();
+    } catch (err) {
+      console.error('Failed to delete item', err);
+      const msg = err?.response?.data?.message || err?.message || 'Failed to delete item';
+      alert(msg);
+    }
+  }
+
+  const openEditModal = (item) => {
+    setEditItem(item);
+    setPreview(item.image || '');
+    setShowEditModal(true);
+  }
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editItem) return;
+    const form = e.target;
+    const name = form.name.value.trim();
+    const category = form.category.value;
+    const price = parseFloat(form.price.value) || 0;
+    const description = form.description?.value || '';
+    const subCategory = form.subCategory?.value || '';
+    const fileInput = form.imageFile;
+
+    try {
+      const file = fileInput && fileInput.files && fileInput.files[0];
+      if (file) {
+        const fd = new FormData();
+        fd.append('name', name);
+        fd.append('category', category);
+        fd.append('price', price);
+        fd.append('description', description);
+        fd.append('subCategory', subCategory);
+        fd.append('imageFile', file);
+        await menuAPI.updateMenuItemMultipart(editItem._id, fd);
+      } else {
+        await menuAPI.updateMenuItem(editItem._id, { name, category, price, description, subCategory });
+      }
+      setShowEditModal(false);
+      setEditItem(null);
+      setPreview('');
+      fetchItems();
+    } catch (err) {
+      console.error('Failed to update item', err);
+      const msg = err?.response?.data?.message || err?.message || 'Failed to update item';
+      alert(msg);
+    }
+  }
+
+  const _toggleStatus = async (item) => {
+    try {
+      await menuAPI.updateMenuItem(item._id, { status: item.status === 'Available' ? 'Out of Stock' : 'Available' });
+      fetchItems();
+    } catch {
+      alert('Failed to update status');
+    }
+  }
 
   return (
     <main className="p-4 md:p-8 lg:p-12 font-sans min-h-screen bg-gray-50">
@@ -58,18 +212,18 @@ export default function MenuManagement() {
       {/* Menu Items Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredItems.map((item) => (
-          <div key={item.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow">
+          <div key={item._id} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow">
             <div className="aspect-square bg-gray-200 relative">
               <img
-                src={item.image}
+                src={item.image && item.image.startsWith('/uploads') ? `${API_BASE}${item.image}` : item.image}
                 alt={item.name}
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-3 right-3 flex gap-2">
-                <button className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors">
+                <button onClick={() => openEditModal(item)} className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors">
                   <FiEdit className="w-4 h-4 text-gray-600" />
                 </button>
-                <button className="p-2 bg-white rounded-full shadow-lg hover:bg-red-50 transition-colors">
+                <button onClick={() => handleDelete(item._id)} className="p-2 bg-white rounded-full shadow-lg hover:bg-red-50 transition-colors">
                   <FiTrash2 className="w-4 h-4 text-red-600" />
                 </button>
               </div>
@@ -90,7 +244,11 @@ export default function MenuManagement() {
         ))}
       </div>
 
-      {filteredItems.length === 0 && (
+      {loading ? (
+        <div className="text-center py-12">Loading...</div>
+      ) : error ? (
+        <div className="text-center py-12 text-red-600">{error}</div>
+      ) : filteredItems.length === 0 && (
         <div className="text-center py-12">
           <FiSearch className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">No menu items found</h3>
@@ -114,18 +272,20 @@ export default function MenuManagement() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Add New Menu Item</h2>
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleAddItem}>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Item Name</label>
                 <input
+                  name="name"
                   type="text"
+                  required
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   placeholder="Enter item name"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <select className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                <select name="category" required className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                   {categories.slice(1).map(category => (
                     <option key={category} value={category}>{category}</option>
                   ))}
@@ -134,11 +294,44 @@ export default function MenuManagement() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
                 <input
+                  name="price"
                   type="number"
                   step="0.01"
+                  required
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   placeholder="0.00"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Image URL (optional)</label>
+                <input name="image" type="text" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="/images/item.jpg" />
+                <div className="mt-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Or upload image</label>
+                  <input name="imageFile" type="file" accept="image/*" onChange={(ev) => {
+                    const f = ev.target.files && ev.target.files[0];
+                    if (!f) { setPreview(''); return; }
+                    const reader = new FileReader();
+                    reader.onload = () => { setPreview(reader.result); };
+                    reader.readAsDataURL(f);
+                  }} className="w-full" />
+                  {preview && (
+                    <div className="mt-3">
+                      <img src={preview} className="w-32 h-32 object-cover rounded" alt="preview" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Sub Category</label>
+                <select name="subCategory" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                  <option value="">None</option>
+                  <option value="LF">LF (Lactose Free)</option>
+                  <option value="GF">GF (Gluten Free)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description (optional)</label>
+                <input name="description" type="text" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="Short description" />
               </div>
               <div className="flex gap-3 pt-4">
                 <button
@@ -154,6 +347,64 @@ export default function MenuManagement() {
                 >
                   Add Item
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Menu Item Modal */}
+      {showEditModal && editItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Menu Item</h2>
+            <form className="space-y-4" onSubmit={handleEditSubmit}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Item Name</label>
+                <input name="name" defaultValue={editItem.name} type="text" required className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select name="category" defaultValue={editItem.category} required className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                  {categories.slice(1).map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
+                <input name="price" defaultValue={editItem.price} type="number" step="0.01" required className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Or replace image</label>
+                <input name="imageFile" type="file" accept="image/*" onChange={(ev) => {
+                  const f = ev.target.files && ev.target.files[0];
+                  if (!f) { setPreview(editItem.image || ''); return; }
+                  const reader = new FileReader();
+                  reader.onload = () => { setPreview(reader.result); };
+                  reader.readAsDataURL(f);
+                }} className="w-full" />
+                {preview && (
+                  <div className="mt-3">
+                    <img src={preview} className="w-32 h-32 object-cover rounded" alt="preview" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Sub Category</label>
+                <select name="subCategory" defaultValue={editItem.subCategory || ''} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                  <option value="">None</option>
+                  <option value="LF">LF (Lactose Free)</option>
+                  <option value="GF">GF (Gluten Free)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description (optional)</label>
+                <input name="description" defaultValue={editItem.description || ''} type="text" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => { setShowEditModal(false); setEditItem(null); setPreview(''); }} className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-colors">Save Changes</button>
               </div>
             </form>
           </div>

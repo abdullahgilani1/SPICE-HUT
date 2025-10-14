@@ -1,5 +1,4 @@
 const User = require('../models/User');
-const bcrypt = require('bcryptjs');
 
 // Get current user's profile
 const getProfile = async (req, res) => {
@@ -19,11 +18,13 @@ const updateProfile = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
+      // Allow phone update
+      user.phone = req.body.phone || user.phone;
     if (req.body.password) {
       user.password = req.body.password;
     }
     await user.save();
-    res.json({ message: 'Profile updated', user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
+      res.json({ message: 'Profile updated', user: { _id: user._id, name: user.name, email: user.email, phone: user.phone, role: user.role } });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

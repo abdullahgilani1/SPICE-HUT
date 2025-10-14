@@ -10,7 +10,7 @@ const Menu = () => {
         <h1 className="text-5xl font-bold text-center text-white mb-2">Explore Our Menu</h1>
         <p className="text-center text-white text-lg mb-10">Select a category to discover our delicious offerings</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-7xl mx-auto">
-          {menuCategories.map((cat, idx) => (
+          {menuCategories.map((cat) => (
             <div
               key={cat.name}
               className="bg-black bg-opacity-70 rounded-2xl p-8 w-full max-w-[480px] min-h-[520px] mx-auto flex flex-col items-center justify-between cursor-pointer transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg"

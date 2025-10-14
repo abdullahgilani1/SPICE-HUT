@@ -1,77 +1,49 @@
-import React, { useState } from "react";
-import { FiSearch, FiFilter, FiEye, FiCheck, FiX, FiClock } from "react-icons/fi";
 
-const orders = [
-  {
-    id: "#ORD-001",
-    customer: "John Doe",
-    items: ["Margherita Pizza", "Chicken Burger"],
-    total: 22.98,
-    status: "Pending",
-    date: "2024-01-15",
-    time: "14:30",
-    payment: "Cash"
-  },
-  {
-    id: "#ORD-002",
-    customer: "Jane Smith",
-    items: ["Caesar Salad", "Pasta Carbonara"],
-    total: 22.98,
-    status: "Processing",
-    date: "2024-01-15",
-    time: "13:45",
-    payment: "Card"
-  },
-  {
-    id: "#ORD-003",
-    customer: "Bob Johnson",
-    items: ["Chocolate Cake"],
-    total: 6.99,
-    status: "Delivered",
-    date: "2024-01-14",
-    time: "19:20",
-    payment: "Cash"
-  },
-  {
-    id: "#ORD-004",
-    customer: "Alice Brown",
-    items: ["Margherita Pizza", "Caesar Salad", "Chocolate Cake"],
-    total: 28.97,
-    status: "Delivered",
-    date: "2024-01-14",
-    time: "18:15",
-    payment: "Card"
-  },
-  {
-    id: "#ORD-005",
-    customer: "Mike Wilson",
-    items: ["Butter Chicken", "Garlic Naan"],
-    total: 24.90,
-    status: "Pending",
-    date: "2024-01-15",
-    time: "15:20",
-    payment: "Card"
-  },
-  {
-    id: "#ORD-006",
-    customer: "Sarah Davis",
-    items: ["Chicken Biryani", "Raita"],
-    total: 26.90,
-    status: "Processing",
-    date: "2024-01-15",
-    time: "16:10",
-    payment: "Cash"
-  },
-];
+
+import React, { useState, useEffect } from "react";
+import { FiSearch, FiFilter, FiEye, FiCheck, FiX, FiClock } from "react-icons/fi";
+import { orderAPI } from "../../services/api";
 
 export default function Orders() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await orderAPI.getUserOrders();
+      const mapped = (data || []).map((o) => ({
+        id: o._id,
+        orderId: o.orderId,
+        customer: o.customerName || o.customer?.name || (o.customer?.email || '').split('@')[0],
+        items: (o.items || []).map(i => i.name || i),
+        total: o.total,
+        status: o.status,
+        date: new Date(o.createdAt).toLocaleDateString(),
+        time: new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        payment: o.paymentMethod || '—',
+        raw: o,
+      }));
+      setOrders(mapped);
+    } catch (err) {
+      setError(err.message || 'Failed to load orders');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
   // Filter orders by search term
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customer.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredOrders = (orders || []).filter(order => {
+    const matchesSearch = (order.orderId || order.id || '').toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (order.customer || '').toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
@@ -89,10 +61,31 @@ export default function Orders() {
     }
   };
 
-  const updateOrderStatus = (orderId, newStatus) => {
-    // In a real app, this would make an API call
-    console.log(`Updating order ${orderId} to ${newStatus}`);
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      await orderAPI.updateOrderStatus(orderId, newStatus);
+      await fetchOrders();
+    } catch (err) {
+      console.error(err);
+      setError('Failed to update order status');
+    }
   };
+
+  if (loading) {
+    return (
+      <main className="p-4 md:p-8 lg:p-12 font-sans min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto text-center py-20">Loading orders...</div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="p-4 md:p-8 lg:p-12 font-sans min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto text-center py-20 text-red-600">{error}</div>
+      </main>
+    );
+  }
 
   return (
     <main className="p-4 md:p-8 lg:p-12 font-sans min-h-screen bg-gray-50">
@@ -173,7 +166,7 @@ export default function Orders() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {pendingOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.orderId || order.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.customer}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       <div className="max-w-xs truncate" title={order.items.join(", ")}>
@@ -238,7 +231,7 @@ export default function Orders() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {processingOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.orderId || order.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.customer}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       <div className="max-w-xs truncate" title={order.items.join(", ")}>
@@ -303,7 +296,7 @@ export default function Orders() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {deliveredOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.orderId || order.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.customer}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       <div className="max-w-xs truncate" title={order.items.join(", ")}>
@@ -356,35 +349,32 @@ export default function Orders() {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Order Information</h3>
                 <div className="space-y-2 text-sm">
-                  <p><span className="font-medium">Order ID:</span> {selectedOrder.id}</p>
+                  <p><span className="font-medium">Order ID:</span> {selectedOrder.orderId || selectedOrder.id}</p>
                   <p><span className="font-medium">Customer:</span> {selectedOrder.customer}</p>
                   <p><span className="font-medium">Date:</span> {selectedOrder.date} at {selectedOrder.time}</p>
                   <p><span className="font-medium">Payment:</span> {selectedOrder.payment}</p>
                 </div>
               </div>
+
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Order Status</h3>
                 <div className="flex items-center space-x-3">
                   <span className={`px-3 py-2 text-sm font-medium rounded-lg ${getStatusColor(selectedOrder.status)}`}>
                     {selectedOrder.status}
                   </span>
+
                   {selectedOrder.status === "Pending" && (
                     <button
-                      onClick={() => {
-                        updateOrderStatus(selectedOrder.id, "Processing");
-                        setSelectedOrder(null);
-                      }}
+                      onClick={() => { updateOrderStatus(selectedOrder.id, "Processing"); setSelectedOrder(null); }}
                       className="text-blue-600 hover:text-blue-900 px-3 py-2 text-sm bg-blue-100 rounded hover:bg-blue-200 transition-colors"
                     >
                       Start Processing
                     </button>
                   )}
+
                   {selectedOrder.status === "Processing" && (
                     <button
-                      onClick={() => {
-                        updateOrderStatus(selectedOrder.id, "Delivered");
-                        setSelectedOrder(null);
-                      }}
+                      onClick={() => { updateOrderStatus(selectedOrder.id, "Delivered"); setSelectedOrder(null); }}
                       className="text-green-600 hover:text-green-900 px-3 py-2 text-sm bg-green-100 rounded hover:bg-green-200 transition-colors"
                     >
                       Mark Delivered
@@ -397,13 +387,14 @@ export default function Orders() {
             <div className="mb-6">
               <h3 className="font-semibold text-gray-900 mb-3">Items Ordered</h3>
               <div className="space-y-2">
-                {selectedOrder.items.map((item, index) => (
+                {(selectedOrder.items || []).map((item, index) => (
                   <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <span className="text-sm text-gray-900">{item}</span>
-                    <span className="text-sm font-medium text-gray-700">${(selectedOrder.total / selectedOrder.items.length).toFixed(2)}</span>
+                    <span className="text-sm font-medium text-gray-700">${(selectedOrder.total / (selectedOrder.items.length || 1)).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
+
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <div className="flex justify-between items-center">
                   <span className="font-semibold text-gray-900">Total</span>

@@ -1,7 +1,7 @@
 import { FiMenu } from "react-icons/fi";
 import { useLocation } from "react-router-dom";
 
-export default function Navbar({ setSidebarCollapsed, sidebarCollapsed, setSidebarOpen }) {
+export default function Navbar({ setSidebarCollapsed, setSidebarOpen }) {
   const location = useLocation();
 
   const getPageTitle = () => {

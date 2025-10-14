@@ -18,7 +18,7 @@ export default function Customers() {
       try {
         const data = await customerAPI.getCustomers();
         setCustomers(data);
-      } catch (err) {
+      } catch {
         setError("Failed to load customers");
       } finally {
         setLoading(false);
@@ -41,7 +41,7 @@ export default function Customers() {
     try {
       await customerAPI.deleteCustomer(id);
       setCustomers((prev) => prev.filter((c) => c._id !== id));
-    } catch (err) {
+    } catch {
       alert("Failed to delete customer");
     }
   };

@@ -1,44 +1,40 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import StatsCard from "../Components/statscard";
 import { FiShoppingCart, FiDollarSign, FiUsers, FiTrendingUp, FiPackage } from "react-icons/fi";
+import { orderAPI, menuAPI, customerAPI } from "../../services/api";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [stats, setStats] = useState([]);
+  const [recentOrders, setRecentOrders] = useState([]);
 
-  // Mock data - in a real app, this would come from an API
-  const stats = [
-    {
-      title: "Total Orders",
-      value: "1,247",
-      icon: <FiShoppingCart />,
-      color: "blue"
-    },
-    {
-      title: "Total Revenue",
-      value: "$45,678",
-      icon: <FiDollarSign />,
-      color: "green"
-    },
-    {
-      title: "Total Customers",
-      value: "892",
-      icon: <FiUsers />,
-      color: "purple"
-    },
-    {
-      title: "Menu Items",
-      value: "156",
-      icon: <FiPackage />,
-      color: "orange"
-    },
-    {
-      title: "Growth Rate",
-      value: "+12.5%",
-      icon: <FiTrendingUp />,
-      color: "green"
-    }
-  ];
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const orders = await orderAPI.getOrders();
+        const items = await menuAPI.getMenuItems();
+        const customers = await customerAPI.getCustomers();
+
+        const totalOrders = orders.length;
+        const totalRevenue = orders.reduce((s, o) => s + (o.total || 0), 0);
+        const totalCustomers = customers.length;
+        const totalItems = items.length;
+
+        setStats([
+          { title: 'Total Orders', value: totalOrders.toString(), icon: <FiShoppingCart />, color: 'blue' },
+          { title: 'Total Revenue', value: `$${totalRevenue.toFixed(2)}`, icon: <FiDollarSign />, color: 'green' },
+          { title: 'Total Customers', value: totalCustomers.toString(), icon: <FiUsers />, color: 'purple' },
+          { title: 'Menu Items', value: totalItems.toString(), icon: <FiPackage />, color: 'orange' },
+        ]);
+
+        setRecentOrders(orders.slice(0, 5));
+      } catch (err) {
+        console.error('Failed to load dashboard stats', err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   return (
     <main className="p-4 md:p-8 lg:p-12 font-sans min-h-screen bg-gray-50">
@@ -69,15 +65,15 @@ export default function Dashboard() {
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Recent Orders</h2>
           <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((order) => (
-              <div key={order} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            {recentOrders.map((order) => (
+              <div key={order._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                 <div>
-                  <p className="font-semibold text-gray-900">Order #{1000 + order}</p>
-                  <p className="text-sm text-gray-600">2 items • $24.50</p>
+                  <p className="font-semibold text-gray-900">{order.orderId || `Order #${order._id}`}</p>
+                  <p className="text-sm text-gray-600">{(order.items || []).length} items • ${order.total?.toFixed(2) || 0}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-gray-500">2 min ago</p>
-                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Completed</span>
+                  <p className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleString()}</p>
+                  <span className={`px-2 py-1 ${order.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'} text-xs rounded-full`}>{order.status || 'Pending'}</span>
                 </div>
               </div>
             ))}

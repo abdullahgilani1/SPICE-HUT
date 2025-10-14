@@ -18,7 +18,7 @@ export default function Admins() {
       try {
         const data = await adminAPI.getAdmins();
         setAdmins(data);
-      } catch (err) {
+      } catch {
         setError("Failed to load admins");
       } finally {
         setLoading(false);
@@ -41,7 +41,7 @@ export default function Admins() {
     try {
       await adminAPI.deleteAdmin(id);
       setAdmins((prev) => prev.filter((a) => a._id !== id));
-    } catch (err) {
+    } catch {
       alert("Failed to delete admin");
     }
   };

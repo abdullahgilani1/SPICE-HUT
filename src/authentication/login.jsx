@@ -4,8 +4,7 @@ import { FiMail, FiLock, FiUser, FiAlertCircle } from "react-icons/fi";
 import loginImg from "../assets/login.jpg";
 import { useAuth } from "../contexts/AuthContext";
 
-import { jwtDecode } from 'jwt-decode';
-import { authAPI } from '../services/api';
+// removed unused imports: jwtDecode, authAPI (AuthContext provides login)
 
 export default function Login() {
   const [email, setEmail] = useState("");

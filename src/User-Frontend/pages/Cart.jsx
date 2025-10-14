@@ -66,7 +66,7 @@ export default function Cart() {
             {cartItems.length === 0 && (
               <DarkCard className="text-center">Your cart is empty.</DarkCard>
             )}
-            {cartItems.map((item, idx) => (
+            {cartItems.map((item) => (
               <DarkCard key={item.name + item.category} className="flex flex-col md:flex-row justify-between">
                 <div>
                   <h3 className="font-bold text-lg">{item.name}</h3>

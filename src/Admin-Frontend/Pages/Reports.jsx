@@ -87,7 +87,7 @@ export default function Reports() {
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Monthly Performance</h2>
           <div className="space-y-4">
-            {reportData.map((item, index) => (
+            {reportData.map((item) => (
               <div key={item.month} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                 <div className="flex items-center space-x-4">
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">

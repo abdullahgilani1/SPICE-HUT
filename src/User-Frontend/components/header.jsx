@@ -33,10 +33,7 @@ const Header = () => {
     navigate('/user/profile');
   };
 
-  const handleLogout = () => {
-    setShowDropdown(false);
-    // Logout is now handled by LogoutButton component
-  };
+  // Logout handled by LogoutButton component
 
   return (
     <header className="bg-black shadow-md py-6 px-8 flex flex-col md:flex-row items-center justify-between">

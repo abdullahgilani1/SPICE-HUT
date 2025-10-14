@@ -24,6 +24,9 @@ import CategoryPage from './User-Frontend/pages/CategoryPage.jsx';
 import Support from './User-Frontend/pages/Support.jsx';
 import Profile from './User-Frontend/pages/Profile.jsx';
 import Cart from './User-Frontend/pages/Cart.jsx';
+import Checkout from './User-Frontend/pages/Checkout.jsx';
+import Billing from './User-Frontend/pages/Billing.jsx';
+import OrderConfirmation from './User-Frontend/pages/OrderConfirmation.jsx';
 import { CartProvider } from './User-Frontend/context.cart.jsx';
 
 // Authentication
@@ -41,7 +44,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/adminregister" element={<AdminRegister />} />
-            
+
             {/* Admin Routes - Protected */}
             <Route path="/admin" element={
               <ProtectedRoute requireAdmin={true}>
@@ -72,6 +75,9 @@ function App() {
               <Route path="support" element={<Support />} />
               <Route path="profile" element={<Profile />} />
               <Route path="cart" element={<Cart />} />
+              <Route path="checkout" element={<Checkout />} />
+              <Route path="billing" element={<Billing />} />
+              <Route path="order-confirmation" element={<OrderConfirmation />} />
             </Route>
           </Routes>
         </Router>

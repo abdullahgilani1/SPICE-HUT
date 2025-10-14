@@ -14,7 +14,7 @@ const Menu = () => {
             <div
               key={cat.name}
               className="bg-black bg-opacity-70 rounded-2xl p-8 w-full max-w-[480px] min-h-[520px] mx-auto flex flex-col items-center justify-between cursor-pointer transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
-            onClick={() => navigate(cat.id)}
+            onClick={() => navigate(`/user/menu/${encodeURIComponent(cat.name)}`)}
             >
               <img
                 src={cat.image}

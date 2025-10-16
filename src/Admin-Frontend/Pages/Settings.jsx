@@ -52,6 +52,12 @@ export default function Settings() {
     setAboutContent({ ...aboutContent, [e.target.name]: e.target.value });
   };
 
+  const handleAboutSave = (e) => {
+    e.preventDefault();
+    localStorage.setItem('aboutContent', JSON.stringify(aboutContent));
+    alert('About Us content saved successfully!');
+  };
+
   const handleContactChange = (e) => {
     const { name, value } = e.target;
     if (name.includes('.')) {
@@ -65,11 +71,23 @@ export default function Settings() {
     }
   };
 
+  const handleContactSave = (e) => {
+    e.preventDefault();
+    localStorage.setItem('contactContent', JSON.stringify(contactContent));
+    alert('Contact content saved successfully!');
+  };
+
   const handlePolicyChange = (policyType, e) => {
     setPolicyContent({
       ...policyContent,
       [policyType]: { ...policyContent[policyType], [e.target.name]: e.target.value }
     });
+  };
+
+  const handlePolicySave = (e) => {
+    e.preventDefault();
+    localStorage.setItem('policyContent', JSON.stringify(policyContent));
+    alert('Policies saved successfully!');
   };
 
   const tabs = [
@@ -158,7 +176,8 @@ export default function Settings() {
                   </div>
                   <div className="flex gap-4">
                     <button
-                      type="submit"
+                      type="button"
+                      onClick={handleAboutSave}
                       className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 flex items-center"
                     >
                       <FiSave className="mr-2" />
@@ -246,7 +265,8 @@ export default function Settings() {
                   </div>
                   <div className="flex gap-4">
                     <button
-                      type="submit"
+                      type="button"
+                      onClick={handleContactSave}
                       className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 flex items-center"
                     >
                       <FiSave className="mr-2" />
@@ -339,7 +359,8 @@ export default function Settings() {
 
                   <div className="flex gap-4">
                     <button
-                      type="submit"
+                      type="button"
+                      onClick={handlePolicySave}
                       className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 flex items-center"
                     >
                       <FiSave className="mr-2" />

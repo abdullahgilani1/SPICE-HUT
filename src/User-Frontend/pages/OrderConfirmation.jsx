@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FaCheck, FaShoppingCart, FaHistory, FaStar, FaDownload, FaToggleOn, FaToggleOff } from "react-icons/fa";
 import { useCart } from '../context.cart.jsx';
 
@@ -13,6 +13,7 @@ const DarkCard = ({ children, className = "" }) => (
 
 export default function OrderConfirmation() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { cartItems, emptyCart, addLoyaltyPoints, instantApplied } = useCart();
 
   // Order data state
@@ -39,8 +40,9 @@ export default function OrderConfirmation() {
   // Load order data on mount
   useEffect(() => {
     const loadOrderData = () => {
-      // Generate dummy order ID
-      const orderId = `SPH${Math.floor(Math.random() * 100000)}`;
+      // Use passed order ID or generate new one
+      const passedOrderId = location.state?.orderId;
+      const orderId = passedOrderId || `SPH${Math.floor(Math.random() * 100000)}`;
 
       // Get current date and time
       const now = new Date();
@@ -109,6 +111,17 @@ export default function OrderConfirmation() {
       // Add loyalty points based on subtotal, but skip if instant redemption was applied
       if (!instantApplied) {
         addLoyaltyPoints(Math.floor(subtotal));
+      }
+
+      // Save order to localStorage for order history
+      if (userInfo.email) {
+        const existingOrders = JSON.parse(localStorage.getItem(`orders_${userInfo.email}`) || '[]');
+        // Check if orderId already exists to prevent duplicates
+        const orderExists = existingOrders.some(order => order.orderId === orderData.orderId);
+        if (!orderExists) {
+          existingOrders.push(orderData);
+          localStorage.setItem(`orders_${userInfo.email}`, JSON.stringify(existingOrders));
+        }
       }
     };
 

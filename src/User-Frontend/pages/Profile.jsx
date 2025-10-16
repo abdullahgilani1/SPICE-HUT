@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { FaUser, FaEnvelope, FaPhone, FaClock, FaGift, FaHome, FaBriefcase, FaTrash, FaStar, FaMapMarkerAlt } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
+import { FaUser, FaEnvelope, FaPhone, FaClock, FaGift, FaHome, FaBriefcase, FaTrash, FaStar, FaMapMarkerAlt, FaRedo } from "react-icons/fa";
+import { useCart } from '../context.cart.jsx';
 
 const initialProfile = {
   firstName: "John",
@@ -14,25 +16,38 @@ const initialAddresses = [
   { id: 2, label: "Work", address: "456 Business Ave, Toronto, M4W 1A1", isDefault: false },
 ];
 
-const initialOrderHistory = [
-  { id: 1, date: "2024-04-01", items: ["Butter Chicken", "Naan"], total: 32.45 },
-  { id: 2, date: "2024-03-15", items: ["Paneer Tikka", "Rice"], total: 25.00 },
-  { id: 3, date: "2024-02-28", items: ["Chicken Biryani"], total: 39.79 },
-];
-
 const Profile = () => {
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+
   const [profile, setProfile] = useState(initialProfile);
   const [isEditing, setIsEditing] = useState(false);
   const [addresses, setAddresses] = useState(initialAddresses);
   const [showAddresses, setShowAddresses] = useState(true);
   const [showOrderHistory, setShowOrderHistory] = useState(false);
-  const [orderHistory] = useState(initialOrderHistory);
+  const [orderHistory, setOrderHistory] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const loyaltyPoints = 150;
   const nextRewardPoints = 100;
   const _totalOrders = orderHistory.length;
   const _totalSpent = orderHistory.reduce((acc, order) => acc + order.total, 0).toFixed(2);
   const _favoriteItem = "Butter Chicken";
+
+  useEffect(() => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    if (userInfo.email) {
+      setIsLoggedIn(true);
+      const orders = JSON.parse(localStorage.getItem(`orders_${userInfo.email}`) || '[]');
+      // Filter to unique orders by orderId
+      const uniqueOrders = orders.filter((order, index, self) =>
+        index === self.findIndex(o => o.orderId === order.orderId)
+      );
+      setOrderHistory(uniqueOrders);
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, []);
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -57,6 +72,14 @@ const Profile = () => {
     const newId = addresses.length ? Math.max(...addresses.map(a => a.id)) + 1 : 1;
     const newAddress = { id: newId, label: "New Address", address: "", isDefault: false };
     setAddresses((prev) => [...prev, newAddress]);
+  };
+
+  const handleClearOrderHistory = () => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    if (userInfo.email) {
+      localStorage.removeItem(`orders_${userInfo.email}`);
+      setOrderHistory([]);
+    }
   };
 
   const _handleAddressChange = (id, field, value) => {
@@ -229,13 +252,42 @@ const Profile = () => {
               </div>
               {showOrderHistory && (
                 <div>
-                  {orderHistory.map((order) => (
-                    <div key={order.id} className="border border-[#5a3f1a] rounded p-3 mb-3">
-                      <p className="text-sm font-semibold">Order Date: {order.date}</p>
-                      <p className="text-sm">Items: {order.items.join(", ")}</p>
-                      <p className="text-sm font-semibold">Total: ${order.total.toFixed(2)}</p>
-                    </div>
-                  ))}
+                  {isLoggedIn ? (
+                      orderHistory.length > 0 ? (
+                        <>
+                          <button
+                            onClick={handleClearOrderHistory}
+                            className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 mb-3"
+                          >
+                            Clear All Orders
+                          </button>
+                          {orderHistory.map((order, index) => (
+                            <div key={index} className="border border-[#5a3f1a] rounded p-3 mb-3 flex justify-between items-center">
+                              <div>
+                                <p className="text-sm font-semibold">Order ID: {order.orderId}</p>
+                                <p className="text-sm font-semibold">Order Date: {order.orderDate}</p>
+                                <p className="text-sm">Items: {order.items.map(item => item.name).join(", ")}</p>
+                                <p className="text-sm font-semibold">Total: ${order.total.toFixed(2)}</p>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  order.items.forEach(item => addToCart(item));
+                                  navigate('/user/cart');
+                                }}
+                                className="bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 flex items-center gap-1"
+                              >
+                                <FaRedo /> Reorder
+                              </button>
+                            </div>
+                          ))}
+                        </>
+                      ) : (
+                        <p className="text-sm text-gray-400">No orders yet. Start ordering to see your history!</p>
+                      )
+                    ) : (
+                      <p className="text-sm text-gray-400">Please log in to view your order history.</p>
+                    )
+                  }
                 </div>
               )}
             </div>

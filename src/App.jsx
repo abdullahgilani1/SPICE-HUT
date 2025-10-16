@@ -22,6 +22,9 @@ import Home from './User-Frontend/pages/Home.jsx';
 import Menu from './User-Frontend/pages/Menu.jsx';
 import CategoryPage from './User-Frontend/pages/CategoryPage.jsx';
 import Support from './User-Frontend/pages/Support.jsx';
+import AboutUs from './User-Frontend/pages/AboutUs.jsx';
+import Contact from './User-Frontend/pages/Contact.jsx';
+import Policies from './User-Frontend/pages/Policies.jsx';
 import Profile from './User-Frontend/pages/Profile.jsx';
 import Cart from './User-Frontend/pages/Cart.jsx';
 import Checkout from './User-Frontend/pages/Checkout.jsx';
@@ -73,6 +76,9 @@ function App() {
               <Route path="menu" element={<Menu />} />
               <Route path="menu/:category" element={<CategoryPage />} />
               <Route path="support" element={<Support />} />
+              <Route path="about-us" element={<AboutUs />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="policies" element={<Policies />} />
               <Route path="profile" element={<Profile />} />
               <Route path="cart" element={<Cart />} />
               <Route path="checkout" element={<Checkout />} />

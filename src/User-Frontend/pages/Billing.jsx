@@ -165,8 +165,11 @@ export default function Billing() {
     saveBillingInfo();
     savePaymentDetails();
 
-    // Navigate to order confirmation
-    navigate('/user/order-confirmation');
+    // Generate unique order ID
+    const orderId = `SPH${Date.now()}`;
+
+    // Navigate to order confirmation with order ID
+    navigate('/user/order-confirmation', { state: { orderId } });
   };
 
   return (

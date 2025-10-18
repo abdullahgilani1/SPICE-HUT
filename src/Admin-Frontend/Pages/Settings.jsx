@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { contentAPI } from "../../services/api";
 import { FiFileText, FiPhone, FiShield, FiSave, FiEye } from "react-icons/fi";
 
 export default function Settings() {
@@ -54,8 +55,16 @@ export default function Settings() {
 
   const handleAboutSave = (e) => {
     e.preventDefault();
-    localStorage.setItem('aboutContent', JSON.stringify(aboutContent));
-    alert('About Us content saved successfully!');
+    // save to backend
+    (async () => {
+      try {
+        await contentAPI.upsertContent({ about: aboutContent });
+        alert('About Us content saved successfully!');
+      } catch (err) {
+        console.error('Failed to save about content', err);
+        alert('Failed to save content');
+      }
+    })();
   };
 
   const handleContactChange = (e) => {
@@ -73,8 +82,15 @@ export default function Settings() {
 
   const handleContactSave = (e) => {
     e.preventDefault();
-    localStorage.setItem('contactContent', JSON.stringify(contactContent));
-    alert('Contact content saved successfully!');
+    (async () => {
+      try {
+        await contentAPI.upsertContent({ contact: contactContent });
+        alert('Contact content saved successfully!');
+      } catch (err) {
+        console.error('Failed to save contact content', err);
+        alert('Failed to save content');
+      }
+    })();
   };
 
   const handlePolicyChange = (policyType, e) => {
@@ -86,9 +102,32 @@ export default function Settings() {
 
   const handlePolicySave = (e) => {
     e.preventDefault();
-    localStorage.setItem('policyContent', JSON.stringify(policyContent));
-    alert('Policies saved successfully!');
+    (async () => {
+      try {
+        await contentAPI.upsertContent({ policies: policyContent });
+        alert('Policies saved successfully!');
+      } catch (err) {
+        console.error('Failed to save policies', err);
+        alert('Failed to save content');
+      }
+    })();
   };
+
+  // Load initial content from backend
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await contentAPI.getContent();
+        if (data) {
+          if (data.about) setAboutContent(prev => ({ ...prev, ...data.about }));
+          if (data.contact) setContactContent(prev => ({ ...prev, ...data.contact }));
+          if (data.policies) setPolicyContent(prev => ({ ...prev, ...data.policies }));
+        }
+      } catch (err) {
+        console.error('Failed to load content', err);
+      }
+    })();
+  }, []);
 
   const tabs = [
     { id: "about", label: "About Us", icon: FiFileText },

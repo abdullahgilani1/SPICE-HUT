@@ -172,6 +172,18 @@ export const orderAPI = {
   },
 };
 
+// Content API
+export const contentAPI = {
+  // Get site content (About/Contact/Policies)
+  getContent: async () => {
+    return api.get('/content');
+  },
+  // Create or update content (admin only)
+  upsertContent: async (contentData) => {
+    return api.post('/content', contentData);
+  }
+};
+
 
 // Customer API (backend integration)
 export const customerAPI = {

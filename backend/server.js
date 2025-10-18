@@ -8,6 +8,7 @@ const customerRoutes = require('./routes/customerRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const menuRoutes = require('./routes/menuRoutes');
+const contentRoutes = require('./routes/contentRoutes');
 const cors = require('cors');
 
 // Load environment variables
@@ -30,6 +31,7 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/menu', menuRoutes);
+app.use('/api/content', contentRoutes);
 
 // serve uploaded images (ensure path is defined above)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getMenuItems, createMenuItem, updateMenuItem, deleteMenuItem } = require('../controllers/menuController');
+const { getCategories, createCategory, deleteCategory } = require('../controllers/categoryController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
@@ -29,9 +30,16 @@ const upload = multer({ storage, fileFilter: imageFileFilter, limits: { fileSize
 // Public: get menu items
 router.get('/', getMenuItems);
 
+// Public: get categories
+router.get('/categories', getCategories);
+
 // Admin-only: manage menu items
 router.post('/', protect, adminOnly, upload.single('imageFile'), createMenuItem);
 router.put('/:id', protect, adminOnly, upload.single('imageFile'), updateMenuItem);
 router.delete('/:id', protect, adminOnly, deleteMenuItem);
+
+// Categories management (admin only for create/delete)
+router.post('/categories', protect, adminOnly, createCategory);
+router.delete('/categories/:id', protect, adminOnly, deleteCategory);
 
 module.exports = router;

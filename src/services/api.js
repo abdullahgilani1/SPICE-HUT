@@ -131,6 +131,19 @@ export const menuAPI = {
   },
 };
 
+// Category API
+export const categoryAPI = {
+  getCategories: async () => {
+    return api.get('/menu/categories');
+  },
+  createCategory: async (categoryData) => {
+    return api.post('/menu/categories', categoryData);
+  },
+  deleteCategory: async (id) => {
+    return api.delete(`/menu/categories/${id}`);
+  }
+};
+
 // Order API (for future use)
 export const orderAPI = {
   // Create order

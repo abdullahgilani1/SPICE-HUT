@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiFilter } from "react-icons/fi";
-import { menuAPI } from "../../services/api";
+import { menuAPI, categoryAPI } from "../../services/api";
 
-const categories = [
+const defaultCategories = [
   'All',
   'appetizers',
   'butter dishes',
@@ -28,6 +28,8 @@ export default function MenuManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [categories, setCategories] = useState(defaultCategories.map(n => ({ name: n })));
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -51,11 +53,25 @@ export default function MenuManagement() {
     }
   }
 
+  const fetchCategories = async () => {
+    try {
+      const data = await categoryAPI.getCategories();
+      if (Array.isArray(data)) {
+        const mapped = [{ name: 'All' }, ...data.map(c => ({ _id: c._id, name: c.name, description: c.description }))];
+        setCategories(mapped);
+        console.log('fetchCategories -> loaded', mapped.length, 'categories', mapped);
+      }
+    } catch (err) {
+      console.error('Failed to load categories', err);
+    }
+  }
+
   useEffect(() => { fetchItems(); }, []);
+  useEffect(() => { fetchCategories(); }, []);
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
+    const matchesCategory = selectedCategory === "All" || (item.category && item.category.toLowerCase() === selectedCategory.toLowerCase()) || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -202,14 +218,24 @@ export default function MenuManagement() {
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           >
-            {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
+            {categories.map(c => (
+              <option key={c._id || c.name} value={c.name}>{c.name}</option>
             ))}
           </select>
         </div>
       </div>
 
       {/* Menu Items Grid */}
+      {/* Categories list (clickable) */}
+      <div className="mb-6">
+        <div className="flex flex-wrap gap-2">
+          {categories.map(c => (
+            <button key={c._id || c.name} onClick={() => { setSelectedCategory(c.name); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`px-3 py-1 rounded-full text-sm font-medium ${selectedCategory === c.name ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              {c.name}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredItems.map((item) => (
           <div key={item._id} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow">
@@ -258,13 +284,23 @@ export default function MenuManagement() {
 
       {/* Add Menu Item Button */}
       <div className="flex justify-center mt-8">
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 flex items-center text-lg font-semibold"
-        >
-          <FiPlus className="mr-2" />
-          Add Menu Item
-        </button>
+        <div className="flex gap-4">
+          {selectedCategory && selectedCategory !== 'All' && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 flex items-center text-lg font-semibold"
+            >
+              <FiPlus className="mr-2" />
+              Add Menu Item
+            </button>
+          )}
+          <button
+            onClick={() => setShowAddCategoryModal(true)}
+            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 flex items-center text-lg font-semibold"
+          >
+            + Add Category
+          </button>
+        </div>
       </div>
 
       {/* Add Menu Item Modal */}
@@ -285,10 +321,12 @@ export default function MenuManagement() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <select name="category" required className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                  {categories.slice(1).map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
+                <select name="category" defaultValue={selectedCategory} required className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                  {categories.length ? categories.filter(c=>c.name!=='All').map(category => (
+                    <option key={category._id || category.name} value={category.name}>{category.name}</option>
+                  )) : (
+                    <option value="">No categories</option>
+                  )}
                 </select>
               </div>
               <div>
@@ -366,9 +404,11 @@ export default function MenuManagement() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                 <select name="category" defaultValue={editItem.category} required className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                  {categories.slice(1).map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
+                  {categories.length ? categories.filter(c => c.name !== 'All').map(category => (
+                    <option key={category._id || category.name} value={category.name}>{category.name}</option>
+                  )) : (
+                    <option value="">No categories</option>
+                  )}
                 </select>
               </div>
               <div>
@@ -405,6 +445,53 @@ export default function MenuManagement() {
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => { setShowEditModal(false); setEditItem(null); setPreview(''); }} className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">Cancel</button>
                 <button type="submit" className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-colors">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Add Category Modal */}
+      {showAddCategoryModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Add New Category</h2>
+            <form className="space-y-4" onSubmit={async (e) => {
+              e.preventDefault();
+              const name = e.target.name.value.trim();
+              const description = e.target.description?.value || '';
+              if (!name) return alert('Category name is required');
+              try {
+                const created = await categoryAPI.createCategory({ name, description });
+                // created is expected to be the created category object
+                if (created && created.name) {
+                  // insert the new category into local state (after 'All') if not present
+                  setCategories(prev => {
+                    const exists = prev.find(c => (c._id && c._id === created._id) || (c.name && c.name.toLowerCase() === created.name.toLowerCase()));
+                    if (exists) return prev;
+                    const head = prev.length && prev[0] && prev[0].name === 'All' ? [prev[0]] : [];
+                    return [...head, { _id: created._id, name: created.name, description: created.description }, ...prev.slice(head.length)];
+                  });
+                  setSelectedCategory(created.name);
+                }
+                setShowAddCategoryModal(false);
+                // also ensure server is in sync; fetch in background
+                fetchCategories();
+              } catch (err) {
+                const msg = err?.response?.data?.message || err?.message || 'Failed to create category';
+                alert(msg);
+              }
+            }}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Category Name</label>
+                <input name="name" type="text" required className="w-full px-4 py-3 border border-gray-300 rounded-xl" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description (optional)</label>
+                <input name="description" type="text" className="w-full px-4 py-3 border border-gray-300 rounded-xl" />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAddCategoryModal(false)} className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl">Add Category</button>
               </div>
             </form>
           </div>
